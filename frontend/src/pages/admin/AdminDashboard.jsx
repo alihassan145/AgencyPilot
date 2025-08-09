@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAdminStats } from "../../store/dashboardSlice";
 import {
   PieChart,
   Pie,
@@ -13,11 +15,14 @@ import {
 
 const COLORS = ["#3B82F6", "#FACC15", "#10B981"];
 
-const pieData = [
-  { name: "To Do", value: 1 },
-  { name: "In Progress", value: 1 },
-  { name: "Completed", value: 0 },
-];
+function useAdminStats() {
+  const dispatch = useDispatch();
+  const { stats } = useSelector((s) => s.dashboard);
+  useEffect(() => {
+    dispatch(fetchAdminStats());
+  }, [dispatch]);
+  return stats;
+}
 
 const lineData = [
   { name: "Jan", clients: 1 },
@@ -29,11 +34,20 @@ const lineData = [
 ];
 
 export default function AdminDashboard() {
+  const { clients, activeTasks, completedTasks } = useAdminStats();
+  const pieData = [
+    {
+      name: "To Do",
+      value: Math.max(0, activeTasks - Math.floor(activeTasks / 2)),
+    },
+    { name: "In Progress", value: Math.floor(activeTasks / 2) },
+    { name: "Completed", value: completedTasks },
+  ];
   return (
     <div className="py-6 space-y-8 bg-gray-50 min-h-screen mx-24">
       <div>
         <h1 className="text-3xl font-bold text-gray-800">
-          Welcome back, Admin User!
+          Welcome back, Admin!
         </h1>
         <p className="text-gray-500 mt-1">
           Here's what's happening with your agency today.
@@ -43,14 +57,14 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card
           title="Total Clients"
-          value="2"
+          value={String(clients)}
           subtitle="Active clients"
           color="from-purple-600 to-indigo-600"
           icon="🏢"
         />
         <Card
           title="Active Tasks"
-          value="2"
+          value={String(activeTasks)}
           subtitle="In progress"
           color="from-green-600 to-teal-600"
           icon="📝"
@@ -64,8 +78,8 @@ export default function AdminDashboard() {
         />
         <Card
           title="Completed"
-          value="0"
-          subtitle="This month"
+          value={String(completedTasks)}
+          subtitle="All time"
           color="from-orange-600 to-amber-600"
           icon="✔️"
         />

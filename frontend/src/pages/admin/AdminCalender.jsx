@@ -1,31 +1,60 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchTasks } from "../../store/tasksSlice";
+import api from "../../api/client";
 
-const tasksData = [
-  {
-    id: 1,
-    title: "Website Redesign",
-    date: "2025-08-02",
-    priority: "HIGH",
-    priorityColor: "bg-red-500",
-    backgroundColor: "bg-yellow-100",
-  },
-  {
-    id: 2,
-    title: "SEO Optimization",
-    date: "2025-08-08",
-    priority: "MEDIUM",
-    priorityColor: "bg-yellow-500",
-    backgroundColor: "bg-yellow-100",
-  },
-];
+const PRIORITY_COLOR = {
+  high: "bg-red-500",
+  medium: "bg-yellow-500",
+  low: "bg-green-500",
+};
 
 export default function AdminCalendar() {
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 7, 1)); // August 2025
-  const [selectedDate, setSelectedDate] = useState(new Date(2025, 7, 5)); // August 5th
+  const dispatch = useDispatch();
+  const { items, loading } = useSelector((s) => s.tasks);
+  const [clients, setClients] = useState([]);
+  const [users, setUsers] = useState([]);
+
+  const today = new Date();
+  const [currentDate, setCurrentDate] = useState(
+    new Date(today.getFullYear(), today.getMonth(), 1)
+  );
+  const [selectedDate, setSelectedDate] = useState(today);
   const [selectedClient, setSelectedClient] = useState("all");
   const [selectedEmployee, setSelectedEmployee] = useState("all");
-  const [fromDate, setFromDate] = useState("2025-07-31");
-  const [toDate, setToDate] = useState("2025-08-30");
+  const [fromDate, setFromDate] = useState(
+    new Date(today.getFullYear(), today.getMonth(), 1)
+      .toISOString()
+      .substring(0, 10)
+  );
+  const [toDate, setToDate] = useState(
+    new Date(today.getFullYear(), today.getMonth() + 1, 0)
+      .toISOString()
+      .substring(0, 10)
+  );
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const [clientsRes, usersRes] = await Promise.all([
+          api.get("/clients"),
+          api.get("/users"), // admin
+        ]);
+        setClients(clientsRes.data || []);
+        setUsers(usersRes.data || []);
+      } catch {}
+    })();
+  }, []);
+
+  useEffect(() => {
+    const params = {
+      from: fromDate,
+      to: toDate,
+    };
+    if (selectedClient !== "all") params.client = selectedClient;
+    if (selectedEmployee !== "all") params.employee = selectedEmployee;
+    dispatch(fetchTasks(params));
+  }, [dispatch, fromDate, toDate, selectedClient, selectedEmployee]);
 
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
@@ -48,7 +77,9 @@ export default function AdminCalendar() {
 
   const getTasksForDate = (date) => {
     const dateString = date.toISOString().split("T")[0];
-    return tasksData.filter((task) => task.date === dateString);
+    return items.filter(
+      (task) => task.dueDate && task.dueDate.substring(0, 10) === dateString
+    );
   };
 
   const isCurrentMonth = (date) => {
@@ -130,8 +161,11 @@ export default function AdminCalendar() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Clients</option>
-              <option value="techcorp">TechCorp Inc.</option>
-              <option value="healthplus">HealthPlus Medical</option>
+              {clients.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {c.companyName}
+                </option>
+              ))}
             </select>
           </div>
           <div>
@@ -144,8 +178,11 @@ export default function AdminCalendar() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Employees</option>
-              <option value="john">John Smith</option>
-              <option value="sarah">Sarah Johnson</option>
+              {users.map((u) => (
+                <option key={u._id} value={u._id}>
+                  {u.name}
+                </option>
+              ))}
             </select>
           </div>
           <div>
@@ -238,11 +275,13 @@ export default function AdminCalendar() {
                 <div className="space-y-1">
                   {tasks.map((task) => (
                     <div
-                      key={task.id}
-                      className={`${task.backgroundColor} p-1 rounded text-xs flex items-center space-x-1`}
+                      key={task._id}
+                      className={`bg-yellow-100 p-1 rounded text-xs flex items-center space-x-1`}
                     >
                       <div
-                        className={`w-2 h-2 ${task.priorityColor} rounded-full`}
+                        className={`w-2 h-2 ${
+                          PRIORITY_COLOR[task.priority] || "bg-gray-400"
+                        } rounded-full`}
                       ></div>
                       <span className="truncate">{task.title}</span>
                     </div>

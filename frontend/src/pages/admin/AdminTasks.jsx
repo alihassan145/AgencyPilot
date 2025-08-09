@@ -1,57 +1,68 @@
-import React, { useState } from "react";
-
-const tasksData = {
-  todo: [
-    {
-      id: 1,
-      title: "Website Redesign",
-      description: "Update company website with new branding",
-      assignee: "John Smith",
-      dueDate: "02/08/2025",
-      priority: "HIGH",
-      priorityColor: "bg-red-100 text-red-700",
-      cardColor: "bg-red-50",
-      borderColor: "border-l-red-500",
-    },
-  ],
-  inProgress: [
-    {
-      id: 2,
-      title: "SEO Optimization",
-      description: "Improve search engine rankings",
-      assignee: "Sarah Johnson",
-      dueDate: "08/08/2025",
-      priority: "MEDIUM",
-      priorityColor: "bg-yellow-100 text-yellow-700",
-      cardColor: "bg-yellow-50",
-      borderColor: "border-l-yellow-500",
-    },
-  ],
-  completed: [],
-};
+import React, { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchTasks,
+  updateTask,
+  deleteTask,
+  createTask,
+} from "../../store/tasksSlice";
+import api from "../../api/client";
 
 export default function AdminTasks() {
-  const [tasks, setTasks] = useState(tasksData);
+  const dispatch = useDispatch();
+  const { items, loading } = useSelector((s) => s.tasks);
   const [selectedAssignee, setSelectedAssignee] = useState("all");
   const [selectedClient, setSelectedClient] = useState("all");
   const [selectedPriority, setSelectedPriority] = useState("all");
+  const [users, setUsers] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    assignedTo: "",
+    reportingManager: "",
+    client: "",
+    dueDate: "",
+    priority: "medium",
+  });
 
-  const moveTask = (taskId, fromStatus, toStatus) => {
-    const task = tasks[fromStatus].find((t) => t.id === taskId);
-    if (task) {
-      setTasks((prev) => ({
-        ...prev,
-        [fromStatus]: prev[fromStatus].filter((t) => t.id !== taskId),
-        [toStatus]: [...prev[toStatus], task],
-      }));
-    }
+  useEffect(() => {
+    dispatch(fetchTasks());
+  }, [dispatch]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const [usersRes, clientsRes] = await Promise.all([
+          api.get("/users", {
+            /* admin only */
+          }),
+          api.get("/clients"),
+        ]);
+        setUsers(usersRes.data || []);
+        setClients(clientsRes.data || []);
+      } catch {}
+    })();
+  }, []);
+
+  const tasks = useMemo(() => {
+    const byStatus = { todo: [], in_progress: [], done: [] };
+    items.forEach((t) => {
+      byStatus[t.status]?.push(t);
+    });
+    return byStatus;
+  }, [items]);
+
+  const moveTask = (taskId, toStatus) => {
+    dispatch(updateTask({ id: taskId, updates: { status: toStatus } }));
   };
 
-  const deleteTask = (taskId, status) => {
-    setTasks((prev) => ({
-      ...prev,
-      [status]: prev[status].filter((t) => t.id !== taskId),
-    }));
+  const handleDelete = (taskId) => dispatch(deleteTask(taskId));
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    await dispatch(createTask(form));
+    setShowModal(false);
   };
 
   return (
@@ -67,7 +78,10 @@ export default function AdminTasks() {
             <span>⬇️</span>
             <span>Export</span>
           </button>
-          <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md font-medium transition-colors flex items-center space-x-2">
+          <button
+            onClick={() => setShowModal(true)}
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md font-medium transition-colors flex items-center space-x-2"
+          >
             <span>+</span>
             <span>Create Task</span>
           </button>
@@ -155,10 +169,10 @@ export default function AdminTasks() {
           <div className="space-y-3">
             {tasks.todo.map((task) => (
               <TaskCard
-                key={task.id}
+                key={task._id}
                 task={task}
-                onMoveRight={() => moveTask(task.id, "todo", "inProgress")}
-                onDelete={() => deleteTask(task.id, "todo")}
+                onMoveRight={() => moveTask(task._id, "in_progress")}
+                onDelete={() => handleDelete(task._id)}
               />
             ))}
           </div>
@@ -174,16 +188,16 @@ export default function AdminTasks() {
               </h2>
             </div>
             <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-sm font-medium">
-              {tasks.inProgress.length}
+              {tasks.in_progress.length}
             </span>
           </div>
           <div className="space-y-3">
-            {tasks.inProgress.map((task) => (
+            {tasks.in_progress.map((task) => (
               <TaskCard
-                key={task.id}
+                key={task._id}
                 task={task}
-                onMoveRight={() => moveTask(task.id, "inProgress", "completed")}
-                onDelete={() => deleteTask(task.id, "inProgress")}
+                onMoveRight={() => moveTask(task._id, "done")}
+                onDelete={() => handleDelete(task._id)}
               />
             ))}
           </div>
@@ -197,40 +211,119 @@ export default function AdminTasks() {
               <h2 className="text-lg font-semibold text-gray-900">Completed</h2>
             </div>
             <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-sm font-medium">
-              {tasks.completed.length}
+              {tasks.done.length}
             </span>
           </div>
           <div className="space-y-3">
-            {tasks.completed.map((task) => (
+            {tasks.done.map((task) => (
               <TaskCard
-                key={task.id}
+                key={task._id}
                 task={task}
-                onDelete={() => deleteTask(task.id, "completed")}
+                onDelete={() => handleDelete(task._id)}
                 isCompleted={true}
               />
             ))}
           </div>
         </div>
       </div>
+      {showModal && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-lg p-6 rounded-xl shadow space-y-4">
+            <h3 className="text-lg font-semibold">Create Task</h3>
+            <form onSubmit={handleCreate} className="space-y-3">
+              <Text
+                label="Title"
+                value={form.title}
+                onChange={(v) => setForm((s) => ({ ...s, title: v }))}
+                required
+              />
+              <Text
+                label="Description"
+                value={form.description}
+                onChange={(v) => setForm((s) => ({ ...s, description: v }))}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <Select
+                  label="Assigned To"
+                  value={form.assignedTo}
+                  onChange={(v) => setForm((s) => ({ ...s, assignedTo: v }))}
+                  options={users.map((u) => ({ label: u.name, value: u._id }))}
+                  required
+                />
+                <Select
+                  label="Reporting Manager"
+                  value={form.reportingManager}
+                  onChange={(v) =>
+                    setForm((s) => ({ ...s, reportingManager: v }))
+                  }
+                  options={users.map((u) => ({ label: u.name, value: u._id }))}
+                  required
+                />
+                <Select
+                  label="Client"
+                  value={form.client}
+                  onChange={(v) => setForm((s) => ({ ...s, client: v }))}
+                  options={clients.map((c) => ({
+                    label: c.companyName,
+                    value: c._id,
+                  }))}
+                />
+                <Text
+                  label="Due Date"
+                  type="date"
+                  value={form.dueDate}
+                  onChange={(v) => setForm((s) => ({ ...s, dueDate: v }))}
+                />
+                <Select
+                  label="Priority"
+                  value={form.priority}
+                  onChange={(v) => setForm((s) => ({ ...s, priority: v }))}
+                  options={[
+                    { label: "Low", value: "low" },
+                    { label: "Medium", value: "medium" },
+                    { label: "High", value: "high" },
+                  ]}
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 rounded border"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded bg-indigo-600 text-white"
+                >
+                  Create
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 function TaskCard({ task, onMoveRight, onDelete, isCompleted = false }) {
   return (
-    <div
-      className={`${task.cardColor} rounded-lg border-l-4 ${task.borderColor} p-4 shadow-sm`}
-    >
+    <div className={`bg-white rounded-lg border p-4 shadow-sm`}>
       <div className="space-y-2">
         <h3 className="font-semibold text-gray-900">{task.title}</h3>
         <p className="text-sm text-gray-600">{task.description}</p>
         <div className="text-xs text-gray-500 space-y-1">
-          <p>Assigned to: {task.assignee}</p>
-          <p>Due: {task.dueDate}</p>
+          <p>Assigned to: {task.assignedTo?.name || "-"}</p>
+          <p>
+            Due:{" "}
+            {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "-"}
+          </p>
         </div>
         <div className="flex items-center justify-between pt-2">
           <span
-            className={`${task.priorityColor} px-2 py-1 rounded text-xs font-medium`}
+            className={`px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700`}
           >
             {task.priority}
           </span>
@@ -254,6 +347,42 @@ function TaskCard({ task, onMoveRight, onDelete, isCompleted = false }) {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function Text({ label, value, onChange, type = "text", required = false }) {
+  return (
+    <div>
+      <label className="block text-sm text-gray-700 mb-1">{label}</label>
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        type={type}
+        required={required}
+        className="w-full border rounded px-3 py-2"
+      />
+    </div>
+  );
+}
+
+function Select({ label, value, onChange, options = [], required = false }) {
+  return (
+    <div>
+      <label className="block text-sm text-gray-700 mb-1">{label}</label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={required}
+        className="w-full border rounded px-3 py-2"
+      >
+        <option value="">Select...</option>
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

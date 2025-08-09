@@ -1,52 +1,31 @@
-import React, { useState } from "react";
-
-const reportsData = [
-  {
-    id: 1,
-    employee: {
-      name: "John Smith",
-      avatar: "J",
-      department: "Design",
-    },
-    client: "TechCorp Inc.",
-    task: {
-      title: "Website design mockups",
-      description:
-        "Created initial wireframes and design mockups for the homepage and product pages. Focused on user experience and modern design principles. Completed responsive design layouts and prepared design specifications for development team.",
-    },
-  },
-  {
-    id: 2,
-    employee: {
-      name: "Sarah Johnson",
-      avatar: "S",
-      department: "SEO",
-    },
-    client: "HealthPlus Medical",
-    task: {
-      title: "SEO keyword research",
-      description:
-        "Conducted comprehensive keyword research for medical services. Analyzed competitor keywords and identified high-value opportunities. Prepared keyword strategy document and content recommendations for better search visibility.",
-    },
-  },
-  {
-    id: 3,
-    employee: {
-      name: "John Smith",
-      avatar: "J",
-      department: "Design",
-    },
-    client: "TechCorp Inc.",
-    task: {
-      title: "Frontend development",
-      description:
-        "Implemented responsive navigation and hero section. Fixed cross-browser compatibility issues and optimized loading performance. Integrated design mockups into functional components and ensured mobile responsiveness.",
-    },
-  },
-];
+import React, { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  approveReport,
+  fetchReports,
+  rejectReport,
+  submitReport,
+} from "../../store/reportsSlice";
+import api from "../../api/client";
 
 export default function AdminReports() {
-  const [reports] = useState(reportsData);
+  const dispatch = useDispatch();
+  const { items, loading } = useSelector((s) => s.reports);
+  const [showModal, setShowModal] = useState(false);
+  const [form, setForm] = useState({ title: "", content: "", client: "" });
+  const [clients, setClients] = useState([]);
+
+  useEffect(() => {
+    dispatch(fetchReports());
+  }, [dispatch]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get("/clients");
+        setClients(data || []);
+      } catch {}
+    })();
+  }, []);
 
   return (
     <div className="p-8 space-y-6">
@@ -56,7 +35,10 @@ export default function AdminReports() {
           <h1 className="text-3xl font-bold text-gray-900">Work Reports</h1>
           <p className="text-gray-600">Submit and view work reports</p>
         </div>
-        <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md font-medium transition-colors flex items-center space-x-2">
+        <button
+          onClick={() => setShowModal(true)}
+          className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md font-medium transition-colors flex items-center space-x-2"
+        >
           <span>+</span>
           <span>Submit Report</span>
         </button>
@@ -118,53 +100,57 @@ export default function AdminReports() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr className="text-left text-sm font-medium text-gray-500 uppercase tracking-wide">
-                <th className="px-6 py-3">Employee</th>
+                <th className="px-6 py-3">Author</th>
                 <th className="px-6 py-3">Client</th>
-                <th className="px-6 py-3">Task</th>
+                <th className="px-6 py-3">Title</th>
+                <th className="px-6 py-3">Status</th>
+                <th className="px-6 py-3">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {reports.map((report) => (
+              {items.map((report) => (
                 <tr
-                  key={report.id}
+                  key={report._id}
                   className="hover:bg-gray-50 transition-colors"
                 >
                   {/* Employee Column */}
                   <td className="px-6 py-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
-                        {report.employee.avatar}
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-900">
-                          {report.employee.name}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {report.employee.department}
-                        </div>
-                      </div>
+                    <div className="font-semibold text-gray-900">
+                      {report.author?.name || "-"}
                     </div>
                   </td>
 
                   {/* Client Column */}
                   <td className="px-6 py-4">
                     <span className="text-gray-900 font-medium">
-                      {report.client}
+                      {report.client?.companyName || "-"}
                     </span>
                   </td>
 
                   {/* Task Column */}
                   <td className="px-6 py-4">
-                    <div className="max-w-md">
-                      <div className="font-semibold text-gray-900 mb-1">
-                        {report.task.title}
-                      </div>
-                      <div className="text-sm text-gray-600 leading-relaxed">
-                        {report.task.description.length > 150
-                          ? `${report.task.description.substring(0, 150)}...`
-                          : report.task.description}
-                      </div>
+                    <div className="max-w-md font-semibold text-gray-900">
+                      {report.title}
                     </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-sm px-2 py-1 rounded bg-gray-100 text-gray-700">
+                      {report.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 space-x-2">
+                    <button
+                      onClick={() => dispatch(approveReport(report._id))}
+                      className="text-green-600 hover:text-green-800"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => dispatch(rejectReport({ id: report._id }))}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      Reject
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -172,6 +158,110 @@ export default function AdminReports() {
           </table>
         </div>
       </div>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-lg p-6 rounded-xl shadow space-y-4">
+            <h3 className="text-lg font-semibold">Submit Report</h3>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                await dispatch(submitReport(form));
+                setShowModal(false);
+              }}
+              className="space-y-3"
+            >
+              <Text
+                label="Title"
+                value={form.title}
+                onChange={(v) => setForm((s) => ({ ...s, title: v }))}
+                required
+              />
+              <TextArea
+                label="Content"
+                value={form.content}
+                onChange={(v) => setForm((s) => ({ ...s, content: v }))}
+                required
+              />
+              <Select
+                label="Client"
+                value={form.client}
+                onChange={(v) => setForm((s) => ({ ...s, client: v }))}
+                options={clients.map((c) => ({
+                  label: c.companyName,
+                  value: c._id,
+                }))}
+              />
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 rounded border"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded bg-indigo-600 text-white"
+                >
+                  Submit
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Text({ label, value, onChange, type = "text", required = false }) {
+  return (
+    <div>
+      <label className="block text-sm text-gray-700 mb-1">{label}</label>
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        type={type}
+        required={required}
+        className="w-full border rounded px-3 py-2"
+      />
+    </div>
+  );
+}
+
+function TextArea({ label, value, onChange, required = false }) {
+  return (
+    <div>
+      <label className="block text-sm text-gray-700 mb-1">{label}</label>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={required}
+        rows={4}
+        className="w-full border rounded px-3 py-2"
+      />
+    </div>
+  );
+}
+
+function Select({ label, value, onChange, options = [], required = false }) {
+  return (
+    <div>
+      <label className="block text-sm text-gray-700 mb-1">{label}</label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={required}
+        className="w-full border rounded px-3 py-2"
+      >
+        <option value="">Select...</option>
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

@@ -1,0 +1,96 @@
+{
+  "info": {
+    "name": "DIGITAL I - Agency Management API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": { "method": "GET", "url": "{{baseUrl}}/health" }
+    },
+    {
+      "name": "Auth / Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@digitali.local\",\n  \"password\": \"Admin@123456\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Users / Me",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/users/me",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+      }
+    },
+    {
+      "name": "Clients / List",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/clients",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+      }
+    },
+    {
+      "name": "Tasks / List",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/tasks",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+      }
+    },
+    {
+      "name": "Attendance / Check In",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/attendance/check-in",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+      }
+    },
+    {
+      "name": "Attendance / Check Out",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/attendance/check-out",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+      }
+    },
+    {
+      "name": "Reports / List",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/reports",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+      }
+    },
+    {
+      "name": "Leaves / List",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/leaves",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+      }
+    },
+    {
+      "name": "Payroll / Me",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/payroll/me",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+      }
+    },
+    {
+      "name": "Docs (Swagger UI)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/docs" }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5050" },
+    { "key": "token", "value": "" }
+  ]
+}
