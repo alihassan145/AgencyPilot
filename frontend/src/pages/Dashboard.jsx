@@ -24,6 +24,7 @@ import AdminAttendance from "./admin/AdminAttendance";
 import AdminLeaves from "./admin/AdminLeaves";
 import AdminPayroll from "./admin/AdminPayroll";
 import AdminNotifications from "./admin/AdminNotifications";
+import Profile from "./Profile";
 
 export default function Dashboard({ userRole = "admin" }) {
   const [currentPage, setCurrentPage] = useState("dashboard");
@@ -54,6 +55,8 @@ export default function Dashboard({ userRole = "admin" }) {
         return <AdminReports />;
       case "notifications":
         return <AdminNotifications />;
+      case "profile":
+        return <Profile />;
       default:
         return renderDashboardContent();
     }

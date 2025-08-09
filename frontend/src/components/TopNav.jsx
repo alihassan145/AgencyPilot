@@ -72,13 +72,7 @@ export default function TopNavbar({ onTabChange }) {
   const dropdownRef = useRef(null);
   const { user, logout } = useAuth();
   const [now, setNow] = useState(new Date());
-  const [showProfile, setShowProfile] = useState(false);
-  const [showChangePassword, setShowChangePassword] = useState(false);
-  const [profileName, setProfileName] = useState(user?.name || "");
-  const [savingProfile, setSavingProfile] = useState(false);
-  const [cpCurrent, setCpCurrent] = useState("");
-  const [cpNew, setCpNew] = useState("");
-  const [cpMessage, setCpMessage] = useState("");
+  // Profile modal removed; now routed to Profile page
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -111,45 +105,11 @@ export default function TopNavbar({ onTabChange }) {
     dateStyle: "medium",
     timeStyle: "short",
   });
+  const rawName = user?.name || "User";
+  const displayName = rawName.replace(/^System\s+/i, "").trim();
+  const avatarLetter = (displayName || "U").slice(0, 1).toUpperCase();
 
-  const handleSaveProfile = async () => {
-    if (user?.role !== "admin") {
-      setShowProfile(false);
-      return;
-    }
-    try {
-      setSavingProfile(true);
-      await api.patch(`/users/${user.id}`, { name: profileName });
-      // optimistically update local user name in storage
-      const raw = localStorage.getItem("user");
-      if (raw) {
-        const u = JSON.parse(raw);
-        u.name = profileName;
-        localStorage.setItem("user", JSON.stringify(u));
-      }
-      setShowProfile(false);
-    } catch (e) {
-      // ignore
-    } finally {
-      setSavingProfile(false);
-    }
-  };
-
-  const handleChangePassword = async (e) => {
-    e.preventDefault();
-    setCpMessage("");
-    try {
-      await api.post("/auth/change-password", {
-        currentPassword: cpCurrent,
-        newPassword: cpNew,
-      });
-      setCpMessage("Password updated successfully");
-      setCpCurrent("");
-      setCpNew("");
-    } catch (err) {
-      setCpMessage(err?.response?.data?.message || "Failed to change password");
-    }
-  };
+  // Change password is on the Profile page
   return (
     <>
       <div className="bg-white shadow-sm border-b">
@@ -181,10 +141,10 @@ export default function TopNavbar({ onTabChange }) {
               }`}
             >
               <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
-                {(user?.name || "U").slice(0, 1).toUpperCase()}
+                {avatarLetter}
               </div>
               <span className="text-sm font-medium text-gray-700">
-                {user?.name || "User"}
+                {displayName}
               </span>
               <span className="text-gray-400">▼</span>
             </button>
@@ -195,25 +155,15 @@ export default function TopNavbar({ onTabChange }) {
                 <div className="py-1">
                   <button
                     onClick={() => {
-                      setShowProfile(true);
                       setIsUserDropdownOpen(false);
-                      setProfileName(user?.name || "");
+                      handleTabClick("profile");
                     }}
                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
                   >
                     <span className="text-gray-600">👤⚙️</span>
                     <span>Profile Settings</span>
                   </button>
-                  <button
-                    onClick={() => {
-                      setShowChangePassword(true);
-                      setIsUserDropdownOpen(false);
-                    }}
-                    className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-gray-50 flex items-center space-x-2"
-                  >
-                    <span>🔑</span>
-                    <span>Change Password</span>
-                  </button>
+
                   <div className="border-t border-gray-200 my-1"></div>
                   <button
                     onClick={logout}
@@ -243,112 +193,7 @@ export default function TopNavbar({ onTabChange }) {
           </div>
         </div>
       </div>
-      {showProfile && (
-        <Modal onClose={() => setShowProfile(false)} title="Profile Settings">
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm text-gray-700 mb-1">Name</label>
-              <input
-                value={profileName}
-                onChange={(e) => setProfileName(e.target.value)}
-                className="w-full border rounded px-3 py-2"
-                disabled={user?.role !== "admin"}
-              />
-              {user?.role !== "admin" && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Contact admin to update your profile details.
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 mb-1">Email</label>
-              <input
-                value={user?.email || ""}
-                className="w-full border rounded px-3 py-2"
-                disabled
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 mb-1">Role</label>
-              <input
-                value={roleLabel}
-                className="w-full border rounded px-3 py-2"
-                disabled
-              />
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={() => setShowProfile(false)}
-                className="px-4 py-2 rounded border"
-              >
-                Close
-              </button>
-              {user?.role === "admin" && (
-                <button
-                  onClick={handleSaveProfile}
-                  disabled={savingProfile}
-                  className="px-4 py-2 rounded bg-indigo-600 text-white disabled:opacity-50"
-                >
-                  {savingProfile ? "Saving..." : "Save"}
-                </button>
-              )}
-            </div>
-          </div>
-        </Modal>
-      )}
-      {showChangePassword && (
-        <Modal
-          onClose={() => setShowChangePassword(false)}
-          title="Change Password"
-        >
-          <form onSubmit={handleChangePassword} className="space-y-3">
-            {cpMessage && (
-              <div className="text-sm text-indigo-700 bg-indigo-50 border border-indigo-200 rounded px-3 py-2">
-                {cpMessage}
-              </div>
-            )}
-            <div>
-              <label className="block text-sm text-gray-700 mb-1">
-                Current Password
-              </label>
-              <input
-                type="password"
-                value={cpCurrent}
-                onChange={(e) => setCpCurrent(e.target.value)}
-                className="w-full border rounded px-3 py-2"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 mb-1">
-                New Password
-              </label>
-              <input
-                type="password"
-                value={cpNew}
-                onChange={(e) => setCpNew(e.target.value)}
-                className="w-full border rounded px-3 py-2"
-                required
-              />
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowChangePassword(false)}
-                className="px-4 py-2 rounded border"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 rounded bg-indigo-600 text-white"
-              >
-                Update
-              </button>
-            </div>
-          </form>
-        </Modal>
-      )}
+      {/* Profile/Change Password modals removed in favor of dedicated Profile page */}
     </>
   );
 }
