@@ -10,5 +10,6 @@ router.use("/attendance", require("./attendance.routes"));
 router.use("/leaves", require("./leaves.routes"));
 router.use("/payroll", require("./payroll.routes"));
 router.use("/notifications", require("./notifications.routes"));
+router.use("/recent-activities", require("./recentActivity.routes"));
 
 module.exports = router;
