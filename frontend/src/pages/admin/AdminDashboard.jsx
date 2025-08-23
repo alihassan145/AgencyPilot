@@ -36,13 +36,26 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchClientGrowthData = async () => {
       try {
-        const { data } = await api.get('/clients');
+        const { data } = await api.get("/clients");
         const clients = data || [];
-        
+
         // Group clients by month for the last 6 months
         const monthlyData = {};
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        
+        const months = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ];
+
         // Initialize last 6 months with 0 clients
         for (let i = 5; i >= 0; i--) {
           const date = new Date();
@@ -50,9 +63,9 @@ export default function AdminDashboard() {
           const monthName = months[date.getMonth()];
           monthlyData[monthName] = 0;
         }
-        
+
         // Count clients by creation month
-        clients.forEach(client => {
+        clients.forEach((client) => {
           if (client.createdAt) {
             const clientDate = new Date(client.createdAt);
             const monthName = months[clientDate.getMonth()];
@@ -61,16 +74,18 @@ export default function AdminDashboard() {
             }
           }
         });
-        
+
         // Convert to chart format
-        const chartData = Object.entries(monthlyData).map(([name, clients]) => ({
-          name,
-          clients
-        }));
-        
+        const chartData = Object.entries(monthlyData).map(
+          ([name, clients]) => ({
+            name,
+            clients,
+          })
+        );
+
         setClientGrowthData(chartData);
       } catch (error) {
-        console.error('Error fetching client growth data:', error);
+        console.error("Error fetching client growth data:", error);
         // Fallback to dummy data
         setClientGrowthData([
           { name: "Jan", clients: 1 },
@@ -90,40 +105,40 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchRecentActivities = async () => {
       try {
-        const { data } = await api.get('/recent-activities?limit=4');
+        const { data } = await api.get("/recent-activities?limit=4");
         setRecentActivities(data.data || []);
       } catch (error) {
-        console.error('Error fetching recent activities:', error);
+        console.error("Error fetching recent activities:", error);
         // Fallback to dummy data
         setRecentActivities([
           {
-            _id: '1',
-            action: 'logout',
-            description: 'Admin User logged out',
+            _id: "1",
+            action: "logout",
+            description: "Admin User logged out",
             createdAt: new Date().toISOString(),
-            user: { name: 'Admin User' }
+            user: { name: "Admin User" },
           },
           {
-            _id: '2',
-            action: 'task_assigned',
-            description: 'New task assigned to John Smith',
+            _id: "2",
+            action: "task_assigned",
+            description: "New task assigned to John Smith",
             createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-            user: { name: 'Admin User' }
+            user: { name: "Admin User" },
           },
           {
-            _id: '3',
-            action: 'task_completed',
-            description: 'Website redesign completed',
+            _id: "3",
+            action: "task_completed",
+            description: "Website redesign completed",
             createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-            user: { name: 'John Smith' }
+            user: { name: "John Smith" },
           },
           {
-            _id: '4',
-            action: 'client_created',
-            description: 'New client TechCorp Inc. added',
+            _id: "4",
+            action: "client_created",
+            description: "New client TechCorp Inc. added",
             createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-            user: { name: 'Admin User' }
-          }
+            user: { name: "Admin User" },
+          },
         ]);
       }
     };
@@ -135,31 +150,38 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchTeamPerformance = async () => {
       try {
-        const { data } = await api.get('/users');
+        const { data } = await api.get("/users");
         const users = data || [];
-        const { data: tasksData } = await api.get('/tasks');
+        const { data: tasksData } = await api.get("/tasks");
         const tasks = tasksData || [];
-        
+
         // Calculate performance for each team member
         const performanceData = users
-          .filter(user => user.role !== 'admin')
-          .map(user => {
-            const userTasks = tasks.filter(task => task.assignee?._id === user._id);
-            const completedTasks = userTasks.filter(task => task.status === 'completed');
-            const progress = userTasks.length > 0 ? Math.round((completedTasks.length / userTasks.length) * 100) : 0;
-            
+          .filter((user) => user.role !== "admin")
+          .map((user) => {
+            const userTasks = tasks.filter(
+              (task) => task.assignee?._id === user._id
+            );
+            const completedTasks = userTasks.filter(
+              (task) => task.status === "completed"
+            );
+            const progress =
+              userTasks.length > 0
+                ? Math.round((completedTasks.length / userTasks.length) * 100)
+                : 0;
+
             return {
               name: user.name,
-              role: user.department || 'General',
+              role: user.department || "General",
               progress,
               tasks: `${completedTasks.length}/${userTasks.length}`,
-              avatar: user.name.charAt(0).toUpperCase()
+              avatar: user.name.charAt(0).toUpperCase(),
             };
           });
-        
+
         setTeamPerformance(performanceData);
       } catch (error) {
-        console.error('Error fetching team performance:', error);
+        console.error("Error fetching team performance:", error);
         // Fallback to dummy data
         setTeamPerformance([
           {
@@ -167,15 +189,15 @@ export default function AdminDashboard() {
             role: "Design",
             progress: 0,
             tasks: "0/1",
-            avatar: "J"
+            avatar: "J",
           },
           {
             name: "Sarah Johnson",
             role: "SEO",
             progress: 0,
             tasks: "0/1",
-            avatar: "S"
-          }
+            avatar: "S",
+          },
         ]);
       } finally {
         setLoading(false);
@@ -199,13 +221,13 @@ export default function AdminDashboard() {
     const now = new Date();
     const date = new Date(dateString);
     const diffInMinutes = Math.floor((now - date) / (1000 * 60));
-    
-    if (diffInMinutes < 1) return 'Just now';
+
+    if (diffInMinutes < 1) return "Just now";
     if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
-    
+
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) return `${diffInHours} hours ago`;
-    
+
     const diffInDays = Math.floor(diffInHours / 24);
     return `${diffInDays} days ago`;
   };
@@ -213,23 +235,23 @@ export default function AdminDashboard() {
   // Helper function to get activity icon
   const getActivityIcon = (action) => {
     const iconMap = {
-      login: '🔐',
-      logout: '↪️',
-      task_created: '📋',
-      task_assigned: '📋',
-      task_completed: '✅',
-      task_updated: '📝',
-      client_created: '🏢',
-      client_updated: '🏢',
-      report_submitted: '📄',
-      report_approved: '✅',
-      leave_requested: '🏖️',
-      team_member_added: '👥'
+      login: "🔐",
+      logout: "↪️",
+      task_created: "📋",
+      task_assigned: "📋",
+      task_completed: "✅",
+      task_updated: "📝",
+      client_created: "🏢",
+      client_updated: "🏢",
+      report_submitted: "📄",
+      report_approved: "✅",
+      leave_requested: "🏖️",
+      team_member_added: "👥",
     };
-    return iconMap[action] || '📄';
+    return iconMap[action] || "📄";
   };
   return (
-    <div className="py-6 space-y-8 bg-gray-50 min-h-screen mx-24">
+    <div className="py-6  bg-gray-50 min-h-screen mx-28">
       <div>
         <h1 className="text-3xl font-bold text-gray-800">
           Welcome back, Admin!
@@ -304,11 +326,17 @@ export default function AdminDashboard() {
               {recentActivities.map((activity) => (
                 <li key={activity._id} className="flex items-center">
                   <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-3">
-                    <span className="text-gray-600 text-sm">{getActivityIcon(activity.action)}</span>
+                    <span className="text-gray-600 text-sm">
+                      {getActivityIcon(activity.action)}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-gray-900">{activity.description}</span>
-                    <div className="text-gray-400 text-xs">{formatTimeAgo(activity.createdAt)}</div>
+                    <span className="text-gray-900">
+                      {activity.description}
+                    </span>
+                    <div className="text-gray-400 text-xs">
+                      {formatTimeAgo(activity.createdAt)}
+                    </div>
                   </div>
                 </li>
               ))}

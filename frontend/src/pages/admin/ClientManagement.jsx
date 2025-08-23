@@ -8,50 +8,56 @@ import {
 } from "../../store/clientsSlice";
 
 // CSV Export utility function
-const exportToCSV = (data, filename = 'clients.csv') => {
+const exportToCSV = (data, filename = "clients.csv") => {
   if (!data || data.length === 0) {
-    alert('No data to export');
+    alert("No data to export");
     return;
   }
 
   // Define CSV headers
   const headers = [
-    'Company Name',
-    'Contact Person', 
-    'Email',
-    'Mobile',
-    'Address',
-    'Plan',
-    'Price',
-    'Expiry Date',
-    'Status'
+    "Company Name",
+    "Contact Person",
+    "Email",
+    "Mobile",
+    "Address",
+    "Plan",
+    "Price",
+    "Expiry Date",
+    "Status",
   ];
 
   // Convert data to CSV format
   const csvContent = [
-    headers.join(','), // Header row
-    ...data.map(client => [
-      `"${client.companyName || ''}",`,
-      `"${client.contactPerson || ''}",`,
-      `"${client.email || ''}",`,
-      `"${client.mobile || ''}",`,
-      `"${client.address || ''}",`,
-      `"${client.plan || ''}",`,
-      `"${client.price || ''}",`,
-      `"${client.expiryDate ? new Date(client.expiryDate).toLocaleDateString() : ''}",`,
-      `"Active"`
-    ].join(''))
-  ].join('\n');
+    headers.join(","), // Header row
+    ...data.map((client) =>
+      [
+        `"${client.companyName || ""}",`,
+        `"${client.contactPerson || ""}",`,
+        `"${client.email || ""}",`,
+        `"${client.mobile || ""}",`,
+        `"${client.address || ""}",`,
+        `"${client.plan || ""}",`,
+        `"${client.price || ""}",`,
+        `"${
+          client.expiryDate
+            ? new Date(client.expiryDate).toLocaleDateString()
+            : ""
+        }",`,
+        `"Active"`,
+      ].join("")
+    ),
+  ].join("\n");
 
   // Create and download the file
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+
   if (link.download !== undefined) {
     const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -87,18 +93,28 @@ export default function ClientManagement() {
 
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter((client) =>
-        client.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        client.contactPerson?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        client.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (client) =>
+          client.companyName
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          client.contactPerson
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          client.email?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     // Apply description filter
     if (descriptionFilter) {
-      filtered = filtered.filter((client) =>
-        client.plan?.toLowerCase().includes(descriptionFilter.toLowerCase()) ||
-        client.address?.toLowerCase().includes(descriptionFilter.toLowerCase())
+      filtered = filtered.filter(
+        (client) =>
+          client.plan
+            ?.toLowerCase()
+            .includes(descriptionFilter.toLowerCase()) ||
+          client.address
+            ?.toLowerCase()
+            .includes(descriptionFilter.toLowerCase())
       );
     }
 
@@ -156,7 +172,7 @@ export default function ClientManagement() {
   };
 
   const handleExportCSV = () => {
-    const timestamp = new Date().toISOString().split('T')[0];
+    const timestamp = new Date().toISOString().split("T")[0];
     const filename = `clients_export_${timestamp}.csv`;
     exportToCSV(clients, filename);
   };
@@ -168,7 +184,7 @@ export default function ClientManagement() {
   };
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-8 space-y-6 mx-24">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
@@ -177,7 +193,7 @@ export default function ClientManagement() {
           <p className="text-gray-600">Manage your client relationships</p>
         </div>
         <div className="space-x-2">
-          <button 
+          <button
             onClick={handleExportCSV}
             className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium transition-colors flex items-center gap-2"
           >
@@ -234,7 +250,7 @@ export default function ClientManagement() {
             </select>
           </div>
           <div className="flex items-center gap-2">
-            <button 
+            <button
               onClick={clearFilters}
               className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md font-medium transition-colors"
             >
