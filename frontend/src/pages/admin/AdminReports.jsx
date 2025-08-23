@@ -28,7 +28,7 @@ export default function AdminReports() {
   }, []);
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-8 space-y-6 mx-24">
       {/* Header Section */}
       <div className="flex items-center justify-between">
         <div>
@@ -139,18 +139,24 @@ export default function AdminReports() {
                     </span>
                   </td>
                   <td className="px-6 py-4 space-x-2">
-                    <button
-                      onClick={() => dispatch(approveReport(report._id))}
-                      className="text-green-600 hover:text-green-800"
-                    >
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => dispatch(rejectReport({ id: report._id }))}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      Reject
-                    </button>
+                    {report.status === 'pending' ? (
+                      <>
+                        <button
+                          onClick={() => dispatch(approveReport(report._id))}
+                          className="text-green-600 hover:text-green-800"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => dispatch(rejectReport({ id: report._id }))}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          Reject
+                        </button>
+                      </>
+                    ) : (
+                      <span className="text-gray-500 text-sm">No actions available</span>
+                    )}
                   </td>
                 </tr>
               ))}

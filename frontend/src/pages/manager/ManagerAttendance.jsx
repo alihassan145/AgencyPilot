@@ -9,7 +9,7 @@ export default function ManagerAttendance() {
     dispatch(fetchAttendance());
   }, [dispatch]);
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-4 mx-24">
       <h2 className="text-xl font-semibold">Team Attendance</h2>
       <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="w-full">

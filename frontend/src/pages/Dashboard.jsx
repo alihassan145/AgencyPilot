@@ -34,32 +34,37 @@ export default function Dashboard({ userRole = "admin" }) {
   };
 
   const renderPageContent = () => {
-    switch (currentPage) {
-      case "dashboard":
-        return renderDashboardContent();
-      case "clients":
-        return <ClientManagement />;
-      case "tasks":
-        return <AdminTasks />;
-      case "team":
-        return <AdminTeam />;
-      case "calendar":
-        return <AdminCalendar />;
-      case "attendance":
-        return <AdminAttendance />;
-      case "leaves":
-        return <AdminLeaves />;
-      case "payroll":
-        return <AdminPayroll />;
-      case "reports":
-        return <AdminReports />;
-      case "notifications":
-        return <AdminNotifications />;
-      case "profile":
-        return <Profile />;
-      default:
-        return renderDashboardContent();
+    if (userRole === "admin") {
+      switch (currentPage) {
+        case "dashboard":
+          return renderDashboardContent();
+        case "clients":
+          return <ClientManagement />;
+        case "tasks":
+          return <AdminTasks />;
+        case "team":
+          return <AdminTeam />;
+        case "calendar":
+          return <AdminCalendar />;
+        case "attendance":
+          return <AdminAttendance />;
+        case "leaves":
+          return <AdminLeaves />;
+        case "payroll":
+          return <AdminPayroll />;
+        case "reports":
+          return <AdminReports />;
+        case "notifications":
+          return <AdminNotifications />;
+        case "profile":
+          return <Profile />;
+        default:
+          return renderDashboardContent();
+      }
     }
+    // Non-admin: defer to role-specific renderer
+    if (currentPage === "profile") return <Profile />;
+    return renderDashboardContent();
   };
   const renderDashboardContent = () => {
     switch (userRole) {

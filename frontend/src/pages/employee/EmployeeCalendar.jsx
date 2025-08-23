@@ -30,8 +30,11 @@ export default function EmployeeCalendar() {
   const tasksByDate = useMemo(() => {
     const map = new Map();
     items.forEach((t) => {
-      if (!t.dueDate) return;
-      const d = t.dueDate.substring(0, 10);
+      const raw = t.dueDate || t.deadline;
+      if (!raw) return;
+      const d = (
+        typeof raw === "string" ? raw : new Date(raw).toISOString()
+      ).substring(0, 10);
       if (!map.has(d)) map.set(d, []);
       map.get(d).push(t);
     });
@@ -39,7 +42,7 @@ export default function EmployeeCalendar() {
   }, [items]);
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-4 mx-24">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">My Calendar</h2>
         <div className="space-x-2">

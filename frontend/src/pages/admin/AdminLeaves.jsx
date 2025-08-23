@@ -32,7 +32,7 @@ export default function AdminLeaves() {
   const act = (id, action) => dispatch(decideLeave({ id, action }));
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-8 space-y-6 mx-24">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Leave Management</h1>
@@ -139,18 +139,24 @@ export default function AdminLeaves() {
                     </span>
                   </td>
                   <td className="px-4 py-3 space-x-2">
-                    <button
-                      onClick={() => act(l._id, "approve")}
-                      className="text-green-600 hover:text-green-800"
-                    >
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => act(l._id, "reject")}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      Reject
-                    </button>
+                    {l.status === 'pending' ? (
+                      <>
+                        <button
+                          onClick={() => act(l._id, "approve")}
+                          className="text-green-600 hover:text-green-800"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => act(l._id, "reject")}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          Reject
+                        </button>
+                      </>
+                    ) : (
+                      <span className="text-gray-500 text-sm">No actions available</span>
+                    )}
                   </td>
                 </tr>
               ))}

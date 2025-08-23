@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAttendance } from "../../store/attendanceSlice";
 import api from "../../api/client";
@@ -6,43 +6,70 @@ import api from "../../api/client";
 export default function EmployeeAttendance() {
   const dispatch = useDispatch();
   const { items, loading } = useSelector((s) => s.attendance);
+  const [msg, setMsg] = useState("");
 
   useEffect(() => {
     dispatch(fetchAttendance());
   }, [dispatch]);
 
+  const todayKey = new Date().toISOString().substring(0, 10);
+  const todayOpen = useMemo(() => {
+    const todays = items.filter(
+      (a) => (a.date ? a.date.substring(0, 10) : null) === todayKey
+    );
+    if (todays.length === 0) return null;
+    // assume last is latest
+    return todays[todays.length - 1];
+  }, [items, todayKey]);
+
+  const isCheckedIn = Boolean(todayOpen?.checkIn) && !todayOpen?.checkOut;
+
   const checkIn = async () => {
     try {
       await api.post("/attendance/check-in");
       dispatch(fetchAttendance());
+      setMsg("Checked in successfully");
     } catch {}
   };
   const checkOut = async () => {
     try {
       await api.post("/attendance/check-out");
       dispatch(fetchAttendance());
+      setMsg("Checked out successfully");
     } catch {}
   };
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-4 mx-24">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">My Attendance</h2>
         <div className="space-x-2">
           <button
             onClick={checkIn}
-            className="px-3 py-1 rounded bg-indigo-600 text-white"
+            disabled={isCheckedIn}
+            className={`px-3 py-1 rounded text-white ${
+              isCheckedIn ? "bg-indigo-400 cursor-not-allowed" : "bg-indigo-600"
+            }`}
           >
             Check In
           </button>
           <button
             onClick={checkOut}
-            className="px-3 py-1 rounded bg-gray-700 text-white"
+            disabled={!isCheckedIn}
+            className={`px-3 py-1 rounded text-white ${
+              !isCheckedIn ? "bg-gray-400 cursor-not-allowed" : "bg-gray-700"
+            }`}
           >
             Check Out
           </button>
         </div>
       </div>
+
+      {msg && (
+        <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded px-3 py-2">
+          {msg}
+        </div>
+      )}
 
       <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="w-full">

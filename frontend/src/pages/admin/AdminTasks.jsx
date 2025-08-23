@@ -14,6 +14,7 @@ export default function AdminTasks() {
   const [selectedAssignee, setSelectedAssignee] = useState("all");
   const [selectedClient, setSelectedClient] = useState("all");
   const [selectedPriority, setSelectedPriority] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState([]);
   const [clients, setClients] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -46,12 +47,49 @@ export default function AdminTasks() {
   }, []);
 
   const tasks = useMemo(() => {
+    // First apply filters to items
+    let filteredItems = items;
+
+    // Apply search filter
+    if (searchTerm) {
+      filteredItems = filteredItems.filter((task) =>
+        task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        task.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply assignee filter
+    if (selectedAssignee !== "all") {
+      filteredItems = filteredItems.filter((task) => {
+        // Match by assignedTo field or user name
+        const assignedUser = users.find(u => u._id === task.assignedTo);
+        return assignedUser?.name?.toLowerCase().includes(selectedAssignee.toLowerCase()) ||
+               task.assignedTo === selectedAssignee;
+      });
+    }
+
+    // Apply client filter
+    if (selectedClient !== "all") {
+      filteredItems = filteredItems.filter((task) => {
+        // Match by client field or client name
+        const taskClient = clients.find(c => c._id === task.client);
+        return taskClient?.companyName?.toLowerCase().includes(selectedClient.toLowerCase()) ||
+               task.client === selectedClient;
+      });
+    }
+
+    // Apply priority filter
+    if (selectedPriority !== "all") {
+      filteredItems = filteredItems.filter((task) => task.priority === selectedPriority);
+    }
+
+    // Group filtered items by status
     const byStatus = { todo: [], in_progress: [], done: [] };
-    items.forEach((t) => {
+    filteredItems.forEach((t) => {
       byStatus[t.status]?.push(t);
     });
     return byStatus;
-  }, [items]);
+  }, [items, searchTerm, selectedAssignee, selectedClient, selectedPriority, users, clients]);
 
   const moveTask = (taskId, toStatus) => {
     dispatch(updateTask({ id: taskId, updates: { status: toStatus } }));
@@ -65,8 +103,67 @@ export default function AdminTasks() {
     setShowModal(false);
   };
 
+  const clearFilters = () => {
+    setSearchTerm("");
+    setSelectedAssignee("all");
+    setSelectedClient("all");
+    setSelectedPriority("all");
+  };
+
+  // CSV Export utility function
+  const exportToCSV = (data, filename) => {
+    const csvContent = data.map(row => 
+      Object.values(row).map(value => 
+        typeof value === 'string' && value.includes(',') ? `"${value}"` : value
+      ).join(',')
+    ).join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExportCSV = () => {
+    // Get all tasks from current filtered view
+    const allTasks = [...tasks.todo, ...tasks.in_progress, ...tasks.done];
+    
+    if (allTasks.length === 0) {
+      alert('No tasks to export');
+      return;
+    }
+
+    // Prepare CSV data with headers
+    const csvData = [
+      ['Title', 'Description', 'Assigned To', 'Client', 'Priority', 'Status', 'Due Date', 'Created At'],
+      ...allTasks.map(task => {
+        const assignedUser = users.find(u => u._id === task.assignedTo);
+        const taskClient = clients.find(c => c._id === task.client);
+        
+        return [
+          task.title || '',
+          task.description || '',
+          assignedUser?.name || task.assignedTo || '',
+          taskClient?.companyName || task.client || '',
+          task.priority || '',
+          task.status || '',
+          task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '',
+          task.createdAt ? new Date(task.createdAt).toLocaleDateString() : ''
+        ];
+      })
+    ];
+
+    const timestamp = new Date().toISOString().split('T')[0];
+    exportToCSV(csvData, `tasks-export-${timestamp}.csv`);
+  };
+
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-8 space-y-6 mx-24">
       {/* Header Section */}
       <div className="flex items-center justify-between">
         <div>
@@ -74,7 +171,10 @@ export default function AdminTasks() {
           <p className="text-gray-600">Organize and track your projects.</p>
         </div>
         <div className="space-x-2">
-          <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium transition-colors flex items-center space-x-2">
+          <button 
+            onClick={handleExportCSV}
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium transition-colors flex items-center space-x-2"
+          >
             <span>⬇️</span>
             <span>Export</span>
           </button>
@@ -98,6 +198,8 @@ export default function AdminTasks() {
             <input
               type="text"
               placeholder="Search tasks..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -145,7 +247,10 @@ export default function AdminTasks() {
             </select>
           </div>
           <div>
-            <button className="w-full px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md font-medium transition-colors flex items-center justify-center space-x-2">
+            <button 
+              onClick={clearFilters}
+              className="w-full px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md font-medium transition-colors flex items-center justify-center space-x-2"
+            >
               <span>✕</span>
               <span>Clear Filters</span>
             </button>

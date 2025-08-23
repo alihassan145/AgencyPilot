@@ -12,7 +12,7 @@ export default function ManagerLeaves() {
   const act = (id, action) => dispatch(decideLeave({ id, action }));
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-4 mx-24">
       <h2 className="text-xl font-semibold">Team Leave Requests</h2>
       <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="w-full">

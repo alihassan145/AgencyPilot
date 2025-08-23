@@ -13,7 +13,7 @@ export default function EmployeeLeaves() {
   }, [dispatch]);
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-4 mx-24">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">My Leaves</h2>
         <button

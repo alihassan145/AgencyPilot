@@ -1,51 +1,128 @@
-import React, { useState } from "react";
-
-const teamMembersData = [
-  {
-    id: 1,
-    name: "John Smith",
-    email: "john.smith@agency.com",
-    avatar: "J",
-    department: "Design",
-    accessLevel: "Employee",
-    accessLevelColor: "bg-green-100 text-green-700",
-    reportingTo: "Sarah Johnson",
-    reportingToAvatar: "S",
-    status: "Active",
-    statusColor: "bg-green-100 text-green-700",
-  },
-  {
-    id: 2,
-    name: "Sarah Johnson",
-    email: "sarah.johnson@agency.com",
-    avatar: "S",
-    department: "SEO",
-    accessLevel: "Manager",
-    accessLevelColor: "bg-blue-100 text-blue-700",
-    reportingTo: "No manager",
-    reportingToAvatar: null,
-    status: "Active",
-    statusColor: "bg-green-100 text-green-700",
-  },
-];
+import React, { useState, useEffect } from "react";
+import api from "../../api/client";
 
 export default function AdminTeam() {
-  const [teamMembers] = useState(teamMembersData);
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editingMember, setEditingMember] = useState(null);
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    department: "",
+    accessLevel: "Employee",
+    reportingTo: "",
+    status: "Active"
+  });
 
-  const handleEdit = (id) => {
-    console.log("Edit team member:", id);
+  // Fetch team members on component mount
+  useEffect(() => {
+    fetchTeamMembers();
+  }, []);
+
+  const fetchTeamMembers = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/users');
+      setTeamMembers(response.data || []);
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+      // Fallback to empty array if API fails
+      setTeamMembers([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleReset = (id) => {
-    console.log("Reset team member:", id);
+  const handleEdit = (member) => {
+    setEditingMember(member);
+    setForm({
+      name: member.name || "",
+      email: member.email || "",
+      department: member.department || "",
+      accessLevel: member.accessLevel || "Employee",
+      reportingTo: member.reportingTo || "",
+      status: member.status || "Active"
+    });
+    setShowModal(true);
   };
 
-  const handleDelete = (id) => {
-    console.log("Delete team member:", id);
+  const handleReset = async (id) => {
+    if (window.confirm('Are you sure you want to reset this team member\'s password?')) {
+      try {
+        await api.post(`/users/${id}/reset-password`);
+        alert('Password reset email sent successfully!');
+      } catch (error) {
+        console.error('Error resetting password:', error);
+        alert('Failed to reset password. Please try again.');
+      }
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this team member?')) {
+      try {
+        await api.delete(`/users/${id}`);
+        await fetchTeamMembers(); // Refresh the list
+        alert('Team member deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting team member:', error);
+        alert('Failed to delete team member. Please try again.');
+      }
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingMember) {
+        // Update existing member
+        await api.put(`/users/${editingMember._id}`, form);
+        alert('Team member updated successfully!');
+      } else {
+        // Create new member
+        await api.post('/users', form);
+        alert('Team member created successfully!');
+      }
+      await fetchTeamMembers(); // Refresh the list
+      setShowModal(false);
+      setEditingMember(null);
+      setForm({
+        name: "",
+        email: "",
+        department: "",
+        accessLevel: "Employee",
+        reportingTo: "",
+        status: "Active"
+      });
+    } catch (error) {
+      console.error('Error saving team member:', error);
+      alert('Failed to save team member. Please try again.');
+    }
+  };
+
+  const getAccessLevelColor = (level) => {
+    switch (level) {
+      case 'Manager': return 'bg-blue-100 text-blue-700';
+      case 'Admin': return 'bg-purple-100 text-purple-700';
+      default: return 'bg-green-100 text-green-700';
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Inactive': return 'bg-red-100 text-red-700';
+      case 'Pending': return 'bg-yellow-100 text-yellow-700';
+      default: return 'bg-green-100 text-green-700';
+    }
+  };
+
+  const getInitials = (name) => {
+    return name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : '?';
   };
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-8 space-y-6 mx-24">
       {/* Header Section */}
       <div className="flex items-center justify-between">
         <div>
@@ -54,7 +131,21 @@ export default function AdminTeam() {
             Manage your team members and hierarchy
           </p>
         </div>
-        <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors flex items-center space-x-2">
+        <button 
+          onClick={() => {
+            setEditingMember(null);
+            setForm({
+              name: "",
+              email: "",
+              department: "",
+              accessLevel: "Employee",
+              reportingTo: "",
+              status: "Active"
+            });
+            setShowModal(true);
+          }}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors flex items-center space-x-2"
+        >
           <span>+</span>
           <span>Add Team Member</span>
         </button>
@@ -79,101 +170,231 @@ export default function AdminTeam() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {teamMembers.map((member) => (
-                <tr
-                  key={member.id}
-                  className="hover:bg-gray-50 transition-colors"
-                >
-                  {/* Employee Column */}
-                  <td className="px-6 py-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
-                        {member.avatar}
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-900">
-                          {member.name}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {member.email}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-
-                  {/* Department Column */}
-                  <td className="px-6 py-4">
-                    <span className="text-gray-900">{member.department}</span>
-                  </td>
-
-                  {/* Access Level Column */}
-                  <td className="px-6 py-4">
-                    <span
-                      className={`${member.accessLevelColor} px-3 py-1 rounded-full text-xs font-medium`}
-                    >
-                      {member.accessLevel}
-                    </span>
-                  </td>
-
-                  {/* Reporting To Column */}
-                  <td className="px-6 py-4">
-                    {member.reportingToAvatar ? (
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold text-sm">
-                          {member.reportingToAvatar}
-                        </div>
-                        <span className="text-gray-900">
-                          {member.reportingTo}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-gray-500">
-                        {member.reportingTo}
-                      </span>
-                    )}
-                  </td>
-
-                  {/* Status Column */}
-                  <td className="px-6 py-4">
-                    <span
-                      className={`${member.statusColor} px-3 py-1 rounded-full text-xs font-medium`}
-                    >
-                      {member.status}
-                    </span>
-                  </td>
-
-                  {/* Actions Column */}
-                  <td className="px-6 py-4">
-                    <div className="flex items-center space-x-3">
-                      <button
-                        onClick={() => handleEdit(member.id)}
-                        className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded text-sm font-medium transition-colors flex items-center space-x-1"
-                      >
-                        <span>✏️</span>
-                        <span>Edit</span>
-                      </button>
-                      <button
-                        onClick={() => handleReset(member.id)}
-                        className="text-yellow-600 hover:text-yellow-800 hover:bg-yellow-50 px-2 py-1 rounded text-sm font-medium transition-colors flex items-center space-x-1"
-                      >
-                        <span>🔑</span>
-                        <span>Reset</span>
-                      </button>
-                      <button
-                        onClick={() => handleDelete(member.id)}
-                        className="text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded text-sm font-medium transition-colors flex items-center space-x-1"
-                      >
-                        <span>🗑️</span>
-                        <span>Delete</span>
-                      </button>
-                    </div>
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                    Loading team members...
                   </td>
                 </tr>
-              ))}
+              ) : teamMembers.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                    No team members found. Add your first team member to get started.
+                  </td>
+                </tr>
+              ) : (
+                teamMembers.map((member) => (
+                  <tr
+                    key={member._id || member.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    {/* Employee Column */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
+                          {getInitials(member.name)}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-gray-900">
+                            {member.name || 'N/A'}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {member.email || 'N/A'}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Department Column */}
+                    <td className="px-6 py-4">
+                      <span className="text-gray-900">{member.department || 'N/A'}</span>
+                    </td>
+
+                    {/* Access Level Column */}
+                    <td className="px-6 py-4">
+                      <span
+                        className={`${getAccessLevelColor(member.accessLevel)} px-3 py-1 rounded-full text-xs font-medium`}
+                      >
+                        {member.accessLevel || 'Employee'}
+                      </span>
+                    </td>
+
+                    {/* Reporting To Column */}
+                    <td className="px-6 py-4">
+                      <span className="text-gray-900">
+                        {member.reportingTo || 'No manager'}
+                      </span>
+                    </td>
+
+                    {/* Status Column */}
+                    <td className="px-6 py-4">
+                      <span
+                        className={`${getStatusColor(member.status)} px-3 py-1 rounded-full text-xs font-medium`}
+                      >
+                        {member.status || 'Active'}
+                      </span>
+                    </td>
+
+                    {/* Actions Column */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={() => handleEdit(member)}
+                          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded text-sm font-medium transition-colors flex items-center space-x-1"
+                        >
+                          <span>✏️</span>
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          onClick={() => handleReset(member._id || member.id)}
+                          className="text-yellow-600 hover:text-yellow-800 hover:bg-yellow-50 px-2 py-1 rounded text-sm font-medium transition-colors flex items-center space-x-1"
+                        >
+                          <span>🔑</span>
+                          <span>Reset</span>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(member._id || member.id)}
+                          className="text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded text-sm font-medium transition-colors flex items-center space-x-1"
+                        >
+                          <span>🗑️</span>
+                          <span>Delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Modal for Add/Edit Team Member */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {editingMember ? 'Edit Team Member' : 'Add New Team Member'}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowModal(false);
+                  setEditingMember(null);
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter full name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter email address"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Department
+                </label>
+                <input
+                  type="text"
+                  value={form.department}
+                  onChange={(e) => setForm({ ...form, department: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter department"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Access Level
+                </label>
+                <select
+                  value={form.accessLevel}
+                  onChange={(e) => setForm({ ...form, accessLevel: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="Employee">Employee</option>
+                  <option value="Manager">Manager</option>
+                  <option value="Admin">Admin</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Reporting To
+                </label>
+                <input
+                  type="text"
+                  value={form.reportingTo}
+                  onChange={(e) => setForm({ ...form, reportingTo: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter manager name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  value={form.status}
+                  onChange={(e) => setForm({ ...form, status: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                  <option value="Pending">Pending</option>
+                </select>
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowModal(false);
+                    setEditingMember(null);
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors"
+                >
+                  {editingMember ? 'Update' : 'Create'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

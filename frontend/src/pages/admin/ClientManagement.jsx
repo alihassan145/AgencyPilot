@@ -7,10 +7,63 @@ import {
   deleteClient as deleteClientThunk,
 } from "../../store/clientsSlice";
 
+// CSV Export utility function
+const exportToCSV = (data, filename = 'clients.csv') => {
+  if (!data || data.length === 0) {
+    alert('No data to export');
+    return;
+  }
+
+  // Define CSV headers
+  const headers = [
+    'Company Name',
+    'Contact Person', 
+    'Email',
+    'Mobile',
+    'Address',
+    'Plan',
+    'Price',
+    'Expiry Date',
+    'Status'
+  ];
+
+  // Convert data to CSV format
+  const csvContent = [
+    headers.join(','), // Header row
+    ...data.map(client => [
+      `"${client.companyName || ''}",`,
+      `"${client.contactPerson || ''}",`,
+      `"${client.email || ''}",`,
+      `"${client.mobile || ''}",`,
+      `"${client.address || ''}",`,
+      `"${client.plan || ''}",`,
+      `"${client.price || ''}",`,
+      `"${client.expiryDate ? new Date(client.expiryDate).toLocaleDateString() : ''}",`,
+      `"Active"`
+    ].join(''))
+  ].join('\n');
+
+  // Create and download the file
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  
+  if (link.download !== undefined) {
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+};
+
 export default function ClientManagement() {
   const dispatch = useDispatch();
   const { items, loading } = useSelector((s) => s.clients);
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [descriptionFilter, setDescriptionFilter] = useState("");
   const [bulkSelect, setBulkSelect] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -30,9 +83,34 @@ export default function ClientManagement() {
   }, [dispatch]);
 
   const clients = useMemo(() => {
-    if (selectedStatus === "all") return items;
-    return items.filter((c) => (selectedStatus === "active" ? true : true));
-  }, [items, selectedStatus]);
+    let filtered = items;
+
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter((client) =>
+        client.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        client.contactPerson?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        client.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply description filter
+    if (descriptionFilter) {
+      filtered = filtered.filter((client) =>
+        client.plan?.toLowerCase().includes(descriptionFilter.toLowerCase()) ||
+        client.address?.toLowerCase().includes(descriptionFilter.toLowerCase())
+      );
+    }
+
+    // Apply status filter
+    if (selectedStatus !== "all") {
+      // For now, all clients are considered active since there's no status field in the data
+      // This can be updated when status field is added to the client model
+      filtered = filtered.filter((client) => selectedStatus === "active");
+    }
+
+    return filtered;
+  }, [items, selectedStatus, searchTerm, descriptionFilter]);
 
   const openAdd = () => {
     setEditing(null);
@@ -77,6 +155,18 @@ export default function ClientManagement() {
     setShowModal(false);
   };
 
+  const handleExportCSV = () => {
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `clients_export_${timestamp}.csv`;
+    exportToCSV(clients, filename);
+  };
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setDescriptionFilter("");
+    setSelectedStatus("all");
+  };
+
   return (
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
@@ -87,8 +177,11 @@ export default function ClientManagement() {
           <p className="text-gray-600">Manage your client relationships</p>
         </div>
         <div className="space-x-2">
-          <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium transition-colors">
-            Export
+          <button 
+            onClick={handleExportCSV}
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium transition-colors flex items-center gap-2"
+          >
+            📊 Export CSV
           </button>
           <button
             onClick={openAdd}
@@ -109,6 +202,8 @@ export default function ClientManagement() {
             <input
               type="text"
               placeholder="Search by name, email, or company"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -119,6 +214,8 @@ export default function ClientManagement() {
             <input
               type="text"
               placeholder="Search in descriptions..."
+              value={descriptionFilter}
+              onChange={(e) => setDescriptionFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -137,7 +234,10 @@ export default function ClientManagement() {
             </select>
           </div>
           <div className="flex items-center gap-2">
-            <button className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md font-medium transition-colors">
+            <button 
+              onClick={clearFilters}
+              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md font-medium transition-colors"
+            >
               Clear
             </button>
             <div className="flex items-center gap-2">
