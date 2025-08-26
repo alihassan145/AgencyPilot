@@ -32,6 +32,8 @@ export default function AdminCalendar() {
       .toISOString()
       .substring(0, 10)
   );
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [showTaskPopup, setShowTaskPopup] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -276,7 +278,12 @@ export default function AdminCalendar() {
                   {tasks.map((task) => (
                     <div
                       key={task._id}
-                      className={`bg-yellow-100 p-1 rounded text-xs flex items-center space-x-1`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedTask(task);
+                        setShowTaskPopup(true);
+                      }}
+                      className={`bg-yellow-100 p-1 rounded text-xs flex items-center space-x-1 cursor-pointer hover:bg-yellow-200 transition-colors`}
                     >
                       <div
                         className={`w-2 h-2 ${
@@ -292,6 +299,141 @@ export default function AdminCalendar() {
           })}
         </div>
       </div>
+
+      {/* Task Details Popup */}
+      {showTaskPopup && selectedTask && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Task Details
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowTaskPopup(false);
+                    setSelectedTask(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 text-xl font-bold"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Title
+                  </label>
+                  <p className="text-gray-900">{selectedTask.title}</p>
+                </div>
+                
+                {selectedTask.description && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <p className="text-gray-900">{selectedTask.description}</p>
+                  </div>
+                )}
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Priority
+                    </label>
+                    <div className="flex items-center space-x-2">
+                      <div
+                        className={`w-3 h-3 ${
+                          PRIORITY_COLOR[selectedTask.priority] || "bg-gray-400"
+                        } rounded-full`}
+                      ></div>
+                      <span className="capitalize text-gray-900">
+                        {selectedTask.priority}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Status
+                    </label>
+                    <span className="capitalize text-gray-900">
+                      {selectedTask.status?.replace('_', ' ')}
+                    </span>
+                  </div>
+                </div>
+                
+                {selectedTask.dueDate && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Due Date
+                    </label>
+                    <p className="text-gray-900">
+                      {new Date(selectedTask.dueDate).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                )}
+                
+                {selectedTask.assignedTo && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Assigned To
+                    </label>
+                    <p className="text-gray-900">
+                      {selectedTask.assignedTo.name || selectedTask.assignedTo}
+                    </p>
+                  </div>
+                )}
+                
+                {selectedTask.client && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Client
+                    </label>
+                    <p className="text-gray-900">
+                      {selectedTask.client.companyName || selectedTask.client}
+                    </p>
+                  </div>
+                )}
+                
+                {selectedTask.completedAt && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Completed At
+                    </label>
+                    <p className="text-gray-900">
+                      {new Date(selectedTask.completedAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => {
+                    setShowTaskPopup(false);
+                    setSelectedTask(null);
+                  }}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md font-medium transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
