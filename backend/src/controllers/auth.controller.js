@@ -67,12 +67,17 @@ const changePassword = asyncHandler(async (req, res) => {
 });
 
 const adminResetPassword = asyncHandler(async (req, res) => {
-  const { userId, newPassword } = req.body;
-  const target = await User.findById(userId).select("+password");
-  if (!target) return res.status(404).json({ message: "User not found" });
-  target.password = newPassword;
-  await target.save();
-  res.json({ message: "Password reset" });
+  try {
+    const { userId, newPassword } = req.body;
+    const target = await User.findById(userId).select("+password");
+    if (!target) return res.status(404).json({ message: "User not found" });
+    target.password = newPassword;
+    await target.save();
+    res.json({ message: "Password reset" });
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    res.status(500).json({ message: 'Failed to reset password', error: error.message });
+  }
 });
 
 module.exports = { register, login, changePassword, adminResetPassword };

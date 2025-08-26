@@ -8,6 +8,8 @@ export default function AdminTeam() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingMember, setEditingMember] = useState(null);
+  const [notification, setNotification] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState(null);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -67,7 +69,7 @@ export default function AdminTeam() {
     setForm({
       name: member.name || "",
       email: member.email || "",
-      department: member.department?.name || "",
+      department: member.department || "",
       accessLevel: member.accessLevel || "Employee",
       reportingTo: member.reportingManagers && member.reportingManagers.length > 0 
         ? member.reportingManagers[0]._id || member.reportingManagers[0] 
@@ -78,28 +80,55 @@ export default function AdminTeam() {
   };
 
   const handleReset = async (id) => {
-    if (window.confirm('Are you sure you want to reset this team member\'s password?')) {
-      try {
-        await api.post(`/users/${id}/reset-password`);
-        alert('Password reset email sent successfully!');
-      } catch (error) {
-        console.error('Error resetting password:', error);
-        alert('Failed to reset password. Please try again.');
-      }
-    }
+    setConfirmDialog({
+      title: 'Reset Password',
+      message: 'Are you sure you want to reset this team member\'s password?',
+      onConfirm: async () => {
+        try {
+           await api.post(`/users/${id}/reset-password`, {
+             userId: id,
+             newPassword: 'defaultPassword123'
+           });
+           setNotification({
+             type: 'success',
+             message: 'Password reset successfully! New password: defaultPassword123'
+           });
+        } catch (error) {
+          console.error('Error resetting password:', error);
+          setNotification({
+            type: 'error',
+            message: 'Failed to reset password. Please try again.'
+          });
+        }
+        setConfirmDialog(null);
+      },
+      onCancel: () => setConfirmDialog(null)
+    });
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this team member?')) {
-      try {
-        await api.delete(`/users/${id}`);
-        await fetchTeamMembers(); // Refresh the list
-        alert('Team member deleted successfully!');
-      } catch (error) {
-        console.error('Error deleting team member:', error);
-        alert('Failed to delete team member. Please try again.');
-      }
-    }
+    setConfirmDialog({
+      title: 'Delete Team Member',
+      message: 'Are you sure you want to delete this team member? This action cannot be undone.',
+      onConfirm: async () => {
+        try {
+          await api.delete(`/users/${id}`);
+          await fetchTeamMembers(); // Refresh the list
+          setNotification({
+            type: 'success',
+            message: 'Team member deleted successfully!'
+          });
+        } catch (error) {
+          console.error('Error deleting team member:', error);
+          setNotification({
+            type: 'error',
+            message: 'Failed to delete team member. Please try again.'
+          });
+        }
+        setConfirmDialog(null);
+      },
+      onCancel: () => setConfirmDialog(null)
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -113,12 +142,18 @@ export default function AdminTeam() {
       
       if (editingMember) {
         // Update existing member
-        await api.put(`/users/${editingMember._id}`, formData);
-        alert('Team member updated successfully!');
+        await api.patch(`/users/${editingMember._id}`, formData);
+        setNotification({
+          type: 'success',
+          message: 'Team member updated successfully!'
+        });
       } else {
         // Create new member
         await api.post('/users', formData);
-        alert('Team member created successfully!');
+        setNotification({
+          type: 'success',
+          message: 'Team member created successfully!'
+        });
       }
       await fetchTeamMembers(); // Refresh the list
       setShowModal(false);
@@ -133,7 +168,10 @@ export default function AdminTeam() {
       });
     } catch (error) {
       console.error('Error saving team member:', error);
-      alert('Failed to save team member. Please try again.');
+      setNotification({
+        type: 'error',
+        message: 'Failed to save team member. Please try again.'
+      });
     }
   };
 
@@ -442,6 +480,57 @@ export default function AdminTeam() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Notification Popup */}
+      {notification && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className={`px-6 py-4 rounded-lg shadow-lg max-w-sm ${
+            notification.type === 'success' 
+              ? 'bg-green-500 text-white' 
+              : 'bg-red-500 text-white'
+          }`}>
+            <div className="flex items-center justify-between">
+              <span className="font-medium">{notification.message}</span>
+              <button
+                onClick={() => setNotification(null)}
+                className="ml-4 text-white hover:text-gray-200"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Dialog */}
+      {confirmDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {confirmDialog.title}
+              </h3>
+              <p className="text-gray-600">
+                {confirmDialog.message}
+              </p>
+            </div>
+            <div className="flex space-x-3">
+              <button
+                onClick={confirmDialog.onCancel}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDialog.onConfirm}
+                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium transition-colors"
+              >
+                Confirm
+              </button>
+            </div>
           </div>
         </div>
       )}
