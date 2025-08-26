@@ -3,6 +3,8 @@ import api from "../../api/client";
 
 export default function AdminTeam() {
   const [teamMembers, setTeamMembers] = useState([]);
+  const [managers, setManagers] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingMember, setEditingMember] = useState(null);
@@ -15,9 +17,11 @@ export default function AdminTeam() {
     status: "Active"
   });
 
-  // Fetch team members on component mount
+  // Fetch team members and managers on component mount
   useEffect(() => {
     fetchTeamMembers();
+    fetchManagers();
+    fetchDepartments();
   }, []);
 
   const fetchTeamMembers = async () => {
@@ -34,14 +38,40 @@ export default function AdminTeam() {
     }
   };
 
+  const fetchManagers = async () => {
+    try {
+      const response = await api.get('/users');
+      const users = response.data || [];
+      // Filter users who can be managers (admin or manager role)
+      const availableManagers = users.filter(user => 
+        user.role === 'admin' || user.role === 'manager'
+      );
+      setManagers(availableManagers);
+    } catch (error) {
+      console.error('Error fetching managers:', error);
+      setManagers([]);
+    }
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const response = await api.get('/departments');
+      setDepartments(response.data);
+    } catch (error) {
+      console.error('Error fetching departments:', error);
+    }
+  };
+
   const handleEdit = (member) => {
     setEditingMember(member);
     setForm({
       name: member.name || "",
       email: member.email || "",
-      department: member.department || "",
+      department: member.department?.name || "",
       accessLevel: member.accessLevel || "Employee",
-      reportingTo: member.reportingTo || "",
+      reportingTo: member.reportingManagers && member.reportingManagers.length > 0 
+        ? member.reportingManagers[0]._id || member.reportingManagers[0] 
+        : "",
       status: member.status || "Active"
     });
     setShowModal(true);
@@ -75,13 +105,19 @@ export default function AdminTeam() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const formData = {
+        ...form,
+        reportingManagers: form.reportingTo ? [form.reportingTo] : []
+      };
+      delete formData.reportingTo; // Remove the old field
+      
       if (editingMember) {
         // Update existing member
-        await api.put(`/users/${editingMember._id}`, form);
+        await api.put(`/users/${editingMember._id}`, formData);
         alert('Team member updated successfully!');
       } else {
         // Create new member
-        await api.post('/users', form);
+        await api.post('/users', formData);
         alert('Team member created successfully!');
       }
       await fetchTeamMembers(); // Refresh the list
@@ -207,7 +243,7 @@ export default function AdminTeam() {
 
                     {/* Department Column */}
                     <td className="px-6 py-4">
-                      <span className="text-gray-900">{member.department || 'N/A'}</span>
+                      <span className="text-gray-900">{member.department?.name || 'N/A'}</span>
                     </td>
 
                     {/* Access Level Column */}
@@ -222,7 +258,11 @@ export default function AdminTeam() {
                     {/* Reporting To Column */}
                     <td className="px-6 py-4">
                       <span className="text-gray-900">
-                        {member.reportingTo || 'No manager'}
+                        {member.reportingManagers && member.reportingManagers.length > 0
+                          ? (typeof member.reportingManagers[0] === 'object' 
+                              ? member.reportingManagers[0].name 
+                              : 'Manager ID: ' + member.reportingManagers[0])
+                          : 'No manager'}
                       </span>
                     </td>
 
@@ -321,13 +361,18 @@ export default function AdminTeam() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Department
                 </label>
-                <input
-                  type="text"
+                <select
                   value={form.department}
                   onChange={(e) => setForm({ ...form, department: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter department"
-                />
+                >
+                  <option value="">Select Department</option>
+                  {departments.map((dept) => (
+                    <option key={dept._id} value={dept.name}>
+                      {dept.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -349,13 +394,18 @@ export default function AdminTeam() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Reporting To
                 </label>
-                <input
-                  type="text"
+                <select
                   value={form.reportingTo}
                   onChange={(e) => setForm({ ...form, reportingTo: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter manager name"
-                />
+                >
+                  <option value="">Select a manager</option>
+                  {managers.map((manager) => (
+                    <option key={manager._id} value={manager._id}>
+                      {manager.name} ({manager.role})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>

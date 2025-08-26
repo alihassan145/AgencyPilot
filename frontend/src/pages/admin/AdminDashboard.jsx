@@ -172,7 +172,7 @@ export default function AdminDashboard() {
 
             return {
               name: user.name,
-              role: user.department || "General",
+              role: user.department?.name || "General",
               progress,
               tasks: `${completedTasks.length}/${userTasks.length}`,
               avatar: user.name.charAt(0).toUpperCase(),
