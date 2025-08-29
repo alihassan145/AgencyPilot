@@ -36,6 +36,13 @@ const listReports = asyncHandler(async (req, res) => {
 const approveReport = asyncHandler(async (req, res) => {
   const report = await Report.findById(req.params.id);
   if (!report) return res.status(404).json({ message: "Report not found" });
+
+  // Access control: only assigned manager or admin can approve
+  if (req.user.role === "employee")
+    return res.status(403).json({ message: "Forbidden" });
+  if (req.user.role === "manager" && report.manager?.toString() !== req.user.id)
+    return res.status(403).json({ message: "Forbidden" });
+
   report.status = "approved";
   report.rejectionReason = undefined;
   await report.save();
@@ -46,6 +53,13 @@ const rejectReport = asyncHandler(async (req, res) => {
   const { reason } = req.body;
   const report = await Report.findById(req.params.id);
   if (!report) return res.status(404).json({ message: "Report not found" });
+
+  // Access control: only assigned manager or admin can reject
+  if (req.user.role === "employee")
+    return res.status(403).json({ message: "Forbidden" });
+  if (req.user.role === "manager" && report.manager?.toString() !== req.user.id)
+    return res.status(403).json({ message: "Forbidden" });
+
   report.status = "rejected";
   report.rejectionReason = reason || "No reason provided";
   await report.save();

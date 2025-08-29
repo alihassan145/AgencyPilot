@@ -25,12 +25,32 @@ async function authenticate(req, res, next) {
   }
 }
 
+// Role hierarchy (higher value = higher privilege)
+const ROLE_RANK = { admin: 3, manager: 2, employee: 1, client: 0 };
+
 function allowRoles(...roles) {
+  // If hierarchy flag detected in roles array (e.g., 'manager+'), we allow higher ranks automatically.
+  // Example: allowRoles('manager+') means manager or any higher role (admin).
+  const parsed = roles.map((r) => ({ base: r.replace(/\+$/, ""), hierarchical: r.endsWith("+") }));
+
   return function roleGuard(req, res, next) {
     if (!req.user)
       return res.status(401).json({ message: "Authentication required" });
-    if (!roles.includes(req.user.role))
+
+    const userRole = req.user.role;
+
+    // Direct allow when exact match in simple roles list
+    if (roles.includes(userRole)) return next();
+
+    // Evaluate hierarchical permissions
+    const allowed = parsed.some(({ base, hierarchical }) => {
+      if (!hierarchical) return false;
+      return ROLE_RANK[userRole] >= ROLE_RANK[base];
+    });
+
+    if (!allowed)
       return res.status(403).json({ message: "Forbidden" });
+
     next();
   };
 }

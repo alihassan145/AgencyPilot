@@ -10,7 +10,7 @@ const {
 
 router.use(authenticate);
 
-router.get("/config", allowRoles("admin", "manager", "employee"), getConfig);
+router.get("/config", allowRoles("employee+"), getConfig);
 router.post(
   "/config",
   allowRoles("admin"),
@@ -28,7 +28,7 @@ router.post(
 );
 router.get(
   "/me",
-  allowRoles("admin", "manager", "employee"),
+  allowRoles("employee+"),
   [
     query("month")
       .optional()

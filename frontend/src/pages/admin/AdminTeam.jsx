@@ -15,8 +15,8 @@ export default function AdminTeam() {
     email: "",
     department: "",
     accessLevel: "Employee",
-    reportingTo: "",
-    status: "Active"
+    reportingTo: [], // allow multiple managers/admins
+    status: "Active",
   });
 
   // Fetch team members and managers on component mount
@@ -29,10 +29,10 @@ export default function AdminTeam() {
   const fetchTeamMembers = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/users');
+      const response = await api.get("/users");
       setTeamMembers(response.data || []);
     } catch (error) {
-      console.error('Error fetching team members:', error);
+      console.error("Error fetching team members:", error);
       // Fallback to empty array if API fails
       setTeamMembers([]);
     } finally {
@@ -42,25 +42,25 @@ export default function AdminTeam() {
 
   const fetchManagers = async () => {
     try {
-      const response = await api.get('/users');
+      const response = await api.get("/users");
       const users = response.data || [];
       // Filter users who can be managers (admin or manager role)
-      const availableManagers = users.filter(user => 
-        user.role === 'admin' || user.role === 'manager'
+      const availableManagers = users.filter(
+        (user) => user.role === "admin" || user.role === "manager"
       );
       setManagers(availableManagers);
     } catch (error) {
-      console.error('Error fetching managers:', error);
+      console.error("Error fetching managers:", error);
       setManagers([]);
     }
   };
 
   const fetchDepartments = async () => {
     try {
-      const response = await api.get('/departments');
+      const response = await api.get("/departments");
       setDepartments(response.data);
     } catch (error) {
-      console.error('Error fetching departments:', error);
+      console.error("Error fetching departments:", error);
     }
   };
 
@@ -71,63 +71,68 @@ export default function AdminTeam() {
       email: member.email || "",
       department: member.department || "",
       accessLevel: member.accessLevel || "Employee",
-      reportingTo: member.reportingManagers && member.reportingManagers.length > 0 
-        ? member.reportingManagers[0]._id || member.reportingManagers[0] 
-        : "",
-      status: member.status || "Active"
+      reportingTo:
+        member.reportingManagers && member.reportingManagers.length > 0
+          ? member.reportingManagers.map((m) =>
+              typeof m === "object" ? m._id : m
+            )
+          : [],
+      status: member.status || "Active",
     });
     setShowModal(true);
   };
 
   const handleReset = async (id) => {
     setConfirmDialog({
-      title: 'Reset Password',
-      message: 'Are you sure you want to reset this team member\'s password?',
+      title: "Reset Password",
+      message: "Are you sure you want to reset this team member's password?",
       onConfirm: async () => {
         try {
-           await api.post(`/users/${id}/reset-password`, {
-             userId: id,
-             newPassword: 'defaultPassword123'
-           });
-           setNotification({
-             type: 'success',
-             message: 'Password reset successfully! New password: defaultPassword123'
-           });
-        } catch (error) {
-          console.error('Error resetting password:', error);
+          await api.post(`/users/${id}/reset-password`, {
+            userId: id,
+            newPassword: "defaultPassword123",
+          });
           setNotification({
-            type: 'error',
-            message: 'Failed to reset password. Please try again.'
+            type: "success",
+            message:
+              "Password reset successfully! New password: defaultPassword123",
+          });
+        } catch (error) {
+          console.error("Error resetting password:", error);
+          setNotification({
+            type: "error",
+            message: "Failed to reset password. Please try again.",
           });
         }
         setConfirmDialog(null);
       },
-      onCancel: () => setConfirmDialog(null)
+      onCancel: () => setConfirmDialog(null),
     });
   };
 
   const handleDelete = async (id) => {
     setConfirmDialog({
-      title: 'Delete Team Member',
-      message: 'Are you sure you want to delete this team member? This action cannot be undone.',
+      title: "Delete Team Member",
+      message:
+        "Are you sure you want to delete this team member? This action cannot be undone.",
       onConfirm: async () => {
         try {
           await api.delete(`/users/${id}`);
           await fetchTeamMembers(); // Refresh the list
           setNotification({
-            type: 'success',
-            message: 'Team member deleted successfully!'
+            type: "success",
+            message: "Team member deleted successfully!",
           });
         } catch (error) {
-          console.error('Error deleting team member:', error);
+          console.error("Error deleting team member:", error);
           setNotification({
-            type: 'error',
-            message: 'Failed to delete team member. Please try again.'
+            type: "error",
+            message: "Failed to delete team member. Please try again.",
           });
         }
         setConfirmDialog(null);
       },
-      onCancel: () => setConfirmDialog(null)
+      onCancel: () => setConfirmDialog(null),
     });
   };
 
@@ -136,23 +141,26 @@ export default function AdminTeam() {
     try {
       const formData = {
         ...form,
-        reportingManagers: form.reportingTo ? [form.reportingTo] : []
+        reportingManagers:
+          form.reportingTo && form.reportingTo.length > 0
+            ? form.reportingTo
+            : [],
       };
       delete formData.reportingTo; // Remove the old field
-      
+
       if (editingMember) {
         // Update existing member
         await api.patch(`/users/${editingMember._id}`, formData);
         setNotification({
-          type: 'success',
-          message: 'Team member updated successfully!'
+          type: "success",
+          message: "Team member updated successfully!",
         });
       } else {
         // Create new member
-        await api.post('/users', formData);
+        await api.post("/users", formData);
         setNotification({
-          type: 'success',
-          message: 'Team member created successfully!'
+          type: "success",
+          message: "Team member created successfully!",
         });
       }
       await fetchTeamMembers(); // Refresh the list
@@ -164,35 +172,47 @@ export default function AdminTeam() {
         department: "",
         accessLevel: "Employee",
         reportingTo: "",
-        status: "Active"
+        status: "Active",
       });
     } catch (error) {
-      console.error('Error saving team member:', error);
+      console.error("Error saving team member:", error);
       setNotification({
-        type: 'error',
-        message: 'Failed to save team member. Please try again.'
+        type: "error",
+        message: "Failed to save team member. Please try again.",
       });
     }
   };
 
   const getAccessLevelColor = (level) => {
     switch (level) {
-      case 'Manager': return 'bg-blue-100 text-blue-700';
-      case 'Admin': return 'bg-purple-100 text-purple-700';
-      default: return 'bg-green-100 text-green-700';
+      case "Manager":
+        return "bg-blue-100 text-blue-700";
+      case "Admin":
+        return "bg-purple-100 text-purple-700";
+      default:
+        return "bg-green-100 text-green-700";
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Inactive': return 'bg-red-100 text-red-700';
-      case 'Pending': return 'bg-yellow-100 text-yellow-700';
-      default: return 'bg-green-100 text-green-700';
+      case "Inactive":
+        return "bg-red-100 text-red-700";
+      case "Pending":
+        return "bg-yellow-100 text-yellow-700";
+      default:
+        return "bg-green-100 text-green-700";
     }
   };
 
   const getInitials = (name) => {
-    return name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : '?';
+    return name
+      ? name
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .toUpperCase()
+      : "?";
   };
 
   return (
@@ -205,7 +225,7 @@ export default function AdminTeam() {
             Manage your team members and hierarchy
           </p>
         </div>
-        <button 
+        <button
           onClick={() => {
             setEditingMember(null);
             setForm({
@@ -214,7 +234,7 @@ export default function AdminTeam() {
               department: "",
               accessLevel: "Employee",
               reportingTo: "",
-              status: "Active"
+              status: "Active",
             });
             setShowModal(true);
           }}
@@ -246,14 +266,21 @@ export default function AdminTeam() {
             <tbody className="divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                  <td
+                    colSpan="6"
+                    className="px-6 py-8 text-center text-gray-500"
+                  >
                     Loading team members...
                   </td>
                 </tr>
               ) : teamMembers.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
-                    No team members found. Add your first team member to get started.
+                  <td
+                    colSpan="6"
+                    className="px-6 py-8 text-center text-gray-500"
+                  >
+                    No team members found. Add your first team member to get
+                    started.
                   </td>
                 </tr>
               ) : (
@@ -270,10 +297,10 @@ export default function AdminTeam() {
                         </div>
                         <div>
                           <div className="font-semibold text-gray-900">
-                            {member.name || 'N/A'}
+                            {member.name || "N/A"}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {member.email || 'N/A'}
+                            {member.email || "N/A"}
                           </div>
                         </div>
                       </div>
@@ -281,35 +308,42 @@ export default function AdminTeam() {
 
                     {/* Department Column */}
                     <td className="px-6 py-4">
-                      <span className="text-gray-900">{member.department?.name || 'N/A'}</span>
+                      <span className="text-gray-900">
+                        {member.department?.name || "N/A"}
+                      </span>
                     </td>
 
                     {/* Access Level Column */}
                     <td className="px-6 py-4">
                       <span
-                        className={`${getAccessLevelColor(member.accessLevel)} px-3 py-1 rounded-full text-xs font-medium`}
+                        className={`${getAccessLevelColor(
+                          member.accessLevel
+                        )} px-3 py-1 rounded-full text-xs font-medium`}
                       >
-                        {member.accessLevel || 'Employee'}
+                        {member.accessLevel || "Employee"}
                       </span>
                     </td>
 
                     {/* Reporting To Column */}
                     <td className="px-6 py-4">
                       <span className="text-gray-900">
-                        {member.reportingManagers && member.reportingManagers.length > 0
-                          ? (typeof member.reportingManagers[0] === 'object' 
-                              ? member.reportingManagers[0].name 
-                              : 'Manager ID: ' + member.reportingManagers[0])
-                          : 'No manager'}
+                        {member.reportingManagers &&
+                        member.reportingManagers.length > 0
+                          ? typeof member.reportingManagers[0] === "object"
+                            ? member.reportingManagers[0].name
+                            : "Manager ID: " + member.reportingManagers[0]
+                          : "No manager"}
                       </span>
                     </td>
 
                     {/* Status Column */}
                     <td className="px-6 py-4">
                       <span
-                        className={`${getStatusColor(member.status)} px-3 py-1 rounded-full text-xs font-medium`}
+                        className={`${getStatusColor(
+                          member.status
+                        )} px-3 py-1 rounded-full text-xs font-medium`}
                       >
-                        {member.status || 'Active'}
+                        {member.status || "Active"}
                       </span>
                     </td>
 
@@ -353,7 +387,7 @@ export default function AdminTeam() {
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">
-                {editingMember ? 'Edit Team Member' : 'Add New Team Member'}
+                {editingMember ? "Edit Team Member" : "Add New Team Member"}
               </h3>
               <button
                 onClick={() => {
@@ -401,7 +435,9 @@ export default function AdminTeam() {
                 </label>
                 <select
                   value={form.department}
-                  onChange={(e) => setForm({ ...form, department: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, department: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select Department</option>
@@ -419,7 +455,9 @@ export default function AdminTeam() {
                 </label>
                 <select
                   value={form.accessLevel}
-                  onChange={(e) => setForm({ ...form, accessLevel: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, accessLevel: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="Employee">Employee</option>
@@ -429,21 +467,36 @@ export default function AdminTeam() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Reporting To
-                </label>
-                <select
-                  value={form.reportingTo}
-                  onChange={(e) => setForm({ ...form, reportingTo: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select a manager</option>
-                  {managers.map((manager) => (
-                    <option key={manager._id} value={manager._id}>
-                      {manager.name} ({manager.role})
-                    </option>
-                  ))}
-                </select>
+                {form.accessLevel !== "Admin" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Reporting To
+                    </label>
+                    <select
+                      multiple
+                      value={form.reportingTo}
+                      onChange={(e) => {
+                        const values = Array.from(e.target.selectedOptions).map(
+                          (o) => o.value
+                        );
+                        setForm({ ...form, reportingTo: values });
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent h-32"
+                    >
+                      {managers
+                        .filter((m) =>
+                          form.accessLevel === "Manager"
+                            ? m.role === "admin"
+                            : ["admin", "manager"].includes(m.role)
+                        )
+                        .map((manager) => (
+                        <option key={manager._id} value={manager._id}>
+                          {manager.name} ({manager.role})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -476,7 +529,7 @@ export default function AdminTeam() {
                   type="submit"
                   className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors"
                 >
-                  {editingMember ? 'Update' : 'Create'}
+                  {editingMember ? "Update" : "Create"}
                 </button>
               </div>
             </form>
@@ -487,11 +540,13 @@ export default function AdminTeam() {
       {/* Notification Popup */}
       {notification && (
         <div className="fixed top-4 right-4 z-50">
-          <div className={`px-6 py-4 rounded-lg shadow-lg max-w-sm ${
-            notification.type === 'success' 
-              ? 'bg-green-500 text-white' 
-              : 'bg-red-500 text-white'
-          }`}>
+          <div
+            className={`px-6 py-4 rounded-lg shadow-lg max-w-sm ${
+              notification.type === "success"
+                ? "bg-green-500 text-white"
+                : "bg-red-500 text-white"
+            }`}
+          >
             <div className="flex items-center justify-between">
               <span className="font-medium">{notification.message}</span>
               <button
@@ -513,9 +568,7 @@ export default function AdminTeam() {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 {confirmDialog.title}
               </h3>
-              <p className="text-gray-600">
-                {confirmDialog.message}
-              </p>
+              <p className="text-gray-600">{confirmDialog.message}</p>
             </div>
             <div className="flex space-x-3">
               <button

@@ -7,6 +7,7 @@ import attendanceReducer from "./attendanceSlice";
 import leavesReducer from "./leavesSlice";
 import payrollReducer from "./payrollSlice";
 import notificationsReducer from "./notificationsSlice";
+import leadsReducer from "./leadsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -17,6 +18,7 @@ export const store = configureStore({
     attendance: attendanceReducer,
     leaves: leavesReducer,
     payroll: payrollReducer,
+    leads: leadsReducer,
     notifications: notificationsReducer,
   },
 });

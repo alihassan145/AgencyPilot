@@ -11,24 +11,24 @@ const {
 
 router.use(authenticate);
 
-router.get("/", allowRoles("admin", "manager", "employee"), listReports);
+router.get("/", allowRoles("employee+"), listReports);
 router.post(
   "/",
-  allowRoles("admin", "manager", "employee"),
+  allowRoles("employee+"),
   [body("title").isString().notEmpty(), body("content").isString().notEmpty()],
   validate,
   submitReport
 );
 router.post(
   "/:id/approve",
-  allowRoles("admin", "manager"),
+  allowRoles("manager+"),
   [param("id").isString().notEmpty()],
   validate,
   approveReport
 );
 router.post(
   "/:id/reject",
-  allowRoles("admin", "manager"),
+  allowRoles("manager+"),
   [param("id").isString().notEmpty(), body("reason").optional().isString()],
   validate,
   rejectReport

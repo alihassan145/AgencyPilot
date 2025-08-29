@@ -10,11 +10,11 @@ const {
 
 router.use(authenticate);
 
-router.post("/check-in", allowRoles("admin", "manager", "employee"), checkIn);
-router.post("/check-out", allowRoles("admin", "manager", "employee"), checkOut);
+router.post("/check-in", allowRoles("employee+"), checkIn);
+router.post("/check-out", allowRoles("employee+"), checkOut);
 router.get(
   "/",
-  allowRoles("admin", "manager", "employee"),
+  allowRoles("employee+"),
   [
     query("employee").optional().isString(),
     query("from").optional().isISO8601(),

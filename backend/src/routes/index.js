@@ -4,6 +4,7 @@ router.use("/auth", require("./auth.routes"));
 router.use("/users", require("./users.routes"));
 router.use("/clients", require("./clients.routes"));
 router.use("/tasks", require("./tasks.routes"));
+router.use("/leads", require("./leads.routes"));
 router.use("/departments", require("./departments.routes"));
 router.use("/reports", require("./reports.routes"));
 router.use("/attendance", require("./attendance.routes"));

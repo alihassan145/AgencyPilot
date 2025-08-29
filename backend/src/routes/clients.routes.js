@@ -12,8 +12,8 @@ const {
 
 router.use(authenticate);
 
-router.get("/", allowRoles("admin", "manager", "employee"), listClients);
-router.get("/:id", allowRoles("admin", "manager", "employee"), getClient);
+router.get("/", allowRoles("employee+"), listClients);
+router.get("/:id", allowRoles("employee+"), getClient);
 
 router.post(
   "/",

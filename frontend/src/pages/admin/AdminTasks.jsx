@@ -17,8 +17,7 @@ export default function AdminTasks() {
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState([]);
   const [clients, setClients] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({
+  const initialForm = {
     title: "",
     description: "",
     assignedTo: "",
@@ -26,7 +25,10 @@ export default function AdminTasks() {
     client: "",
     dueDate: "",
     priority: "medium",
-  });
+  };
+  const [showModal, setShowModal] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+  const [form, setForm] = useState(initialForm);
 
   useEffect(() => {
     dispatch(fetchTasks());
@@ -97,10 +99,34 @@ export default function AdminTasks() {
 
   const handleDelete = (taskId) => dispatch(deleteTask(taskId));
 
-  const handleCreate = async (e) => {
+  const handleEdit = (task) => {
+    setEditingTask(task);
+    setForm({
+      ...initialForm,
+      title: task.title || "",
+      description: task.description || "",
+      assignedTo: task.assignedTo?._id || task.assignedTo || "",
+      reportingManager:
+        task.reportingManager?._id || task.reportingManager || "",
+      client: task.client?._id || task.client || "",
+      dueDate: task.dueDate
+        ? new Date(task.dueDate).toISOString().split("T")[0]
+        : "",
+      priority: task.priority || "medium",
+    });
+    setShowModal(true);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    await dispatch(createTask(form));
+    if (editingTask) {
+      await dispatch(updateTask({ id: editingTask._id, updates: form }));
+    } else {
+      await dispatch(createTask(form));
+    }
     setShowModal(false);
+    setEditingTask(null);
+    setForm(initialForm);
   };
 
   const clearFilters = () => {
@@ -278,6 +304,7 @@ export default function AdminTasks() {
                 task={task}
                 onMoveRight={() => moveTask(task._id, "in_progress")}
                 onDelete={() => handleDelete(task._id)}
+                onEdit={() => handleEdit(task)}
               />
             ))}
           </div>
@@ -303,6 +330,7 @@ export default function AdminTasks() {
                 task={task}
                 onMoveRight={() => moveTask(task._id, "done")}
                 onDelete={() => handleDelete(task._id)}
+                onEdit={() => handleEdit(task)}
               />
             ))}
           </div>
@@ -325,6 +353,7 @@ export default function AdminTasks() {
                 key={task._id}
                 task={task}
                 onDelete={() => handleDelete(task._id)}
+                onEdit={() => handleEdit(task)}
                 isCompleted={true}
               />
             ))}
@@ -334,8 +363,8 @@ export default function AdminTasks() {
       {showModal && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-lg p-6 rounded-xl shadow space-y-4">
-            <h3 className="text-lg font-semibold">Create Task</h3>
-            <form onSubmit={handleCreate} className="space-y-3">
+            <h3 className="text-lg font-semibold">{editingTask ? "Edit Task" : "Create Task"}</h3>
+            <form onSubmit={handleSubmit} className="space-y-3">
               <Text
                 label="Title"
                 value={form.title}
@@ -402,7 +431,7 @@ export default function AdminTasks() {
                   type="submit"
                   className="px-4 py-2 rounded bg-indigo-600 text-white"
                 >
-                  Create
+                  {editingTask ? "Update" : "Create"}
                 </button>
               </div>
             </form>
@@ -413,7 +442,7 @@ export default function AdminTasks() {
   );
 }
 
-function TaskCard({ task, onMoveRight, onDelete, isCompleted = false }) {
+function TaskCard({ task, onMoveRight, onDelete, onEdit, isCompleted = false }) {
   return (
     <div className={`bg-white rounded-lg border p-4 shadow-sm`}>
       <div className="space-y-2">
@@ -440,6 +469,15 @@ function TaskCard({ task, onMoveRight, onDelete, isCompleted = false }) {
                 title="Move to next stage"
               >
                 ➡️
+              </button>
+            )}
+            {onEdit && (
+              <button
+                onClick={onEdit}
+                className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-1 rounded transition-colors"
+                title="Edit task"
+              >
+                ✏️
               </button>
             )}
             <button

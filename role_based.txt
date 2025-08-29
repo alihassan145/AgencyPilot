@@ -1,0 +1,2280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agency Pro - Role & Permission Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .menu-item {
+            transition: all 0.3s ease;
+        }
+        .menu-item:hover {
+            transform: translateX(4px);
+        }
+        .permission-toggle {
+            transition: all 0.2s ease;
+        }
+        .access-granted {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        .access-denied {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        .access-partial {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        .permission-selector {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .permission-selector:hover {
+            transform: scale(1.05);
+        }
+        .custom-role {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+        .role-card {
+            transition: all 0.3s ease;
+        }
+        .role-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-xl border-b-4 border-blue-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                        <span class="text-white font-bold text-xl">AP</span>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Agency Pro</h1>
+                        <p class="text-sm text-gray-600">Role & Permission Management System</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-sm text-gray-600">Current Role</p>
+                        <p class="font-semibold text-gray-900" id="currentRole">Admin</p>
+                    </div>
+                    <button onclick="showCreateRoleModal()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors" id="createRoleBtn">
+                        + Create Role
+                    </button>
+                    <button onclick="switchRole()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                        Switch Role
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Role Selector -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-900">Select Role to View Permissions</h2>
+                <button onclick="showManageRolesModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors">
+                    Manage Roles
+                </button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" id="roleSelector">
+                <!-- Roles will be populated here -->
+            </div>
+        </div>
+
+        <!-- Permission Matrix -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-6">
+                <h2 class="text-2xl font-bold text-white">📊 Priority-Based Permission Matrix</h2>
+                <p class="text-blue-100 mt-2">Complete access control for all Agency Pro features</p>
+            </div>
+
+            <!-- Dashboard -->
+            <div class="border-b border-gray-200">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <span class="text-2xl">📊</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">1. Dashboard</h3>
+                                <p class="text-sm text-gray-600">Main dashboard access and overview</p>
+                            </div>
+                        </div>
+                        <div class="access-indicator" id="dashboard-access">
+                            <span class="px-3 py-1 rounded-full text-sm font-medium">Full Access</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Dashboard (All)</h4>
+                                <div class="permission-status" id="dashboard-view-all">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Dashboard (Team)</h4>
+                                <div class="permission-status" id="dashboard-view-team">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Dashboard (Self)</h4>
+                                <div class="permission-status" id="dashboard-view-self">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clients -->
+            <div class="border-b border-gray-200">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                <span class="text-2xl">🏢</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">2. Clients</h3>
+                                <p class="text-sm text-gray-600">Client management and administration</p>
+                            </div>
+                        </div>
+                        <div class="access-indicator" id="clients-access">
+                            <span class="px-3 py-1 rounded-full text-sm font-medium">Full Access</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Clients (All)</h4>
+                                <div class="permission-status" id="clients-view-all">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Clients (Team)</h4>
+                                <div class="permission-status" id="clients-view-team">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Clients (Self)</h4>
+                                <div class="permission-status" id="clients-view-self">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Add Client</h4>
+                                <div class="permission-status" id="clients-add">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Edit Client</h4>
+                                <div class="permission-status" id="clients-edit">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Delete Client</h4>
+                                <div class="permission-status" id="clients-delete">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Export / Download Clients</h4>
+                                <div class="permission-status" id="clients-export">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leads -->
+            <div class="border-b border-gray-200">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <span class="text-2xl">🎯</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">3. Leads</h3>
+                                <p class="text-sm text-gray-600">Lead generation and conversion management</p>
+                            </div>
+                        </div>
+                        <div class="access-indicator" id="leads-access">
+                            <span class="px-3 py-1 rounded-full text-sm font-medium">Full Access</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Leads (All)</h4>
+                                <div class="permission-status" id="leads-view-all">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Leads (Team)</h4>
+                                <div class="permission-status" id="leads-view-team">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Leads (Self)</h4>
+                                <div class="permission-status" id="leads-view-self">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Add Lead</h4>
+                                <div class="permission-status" id="leads-add">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Edit Lead</h4>
+                                <div class="permission-status" id="leads-edit">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Delete Lead</h4>
+                                <div class="permission-status" id="leads-delete">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Follow up status update</h4>
+                                <div class="permission-status" id="leads-convert">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Import/Export / Download Leads</h4>
+                                <div class="permission-status" id="leads-export">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projects & Tasks -->
+            <div class="border-b border-gray-200">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <span class="text-2xl">📋</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">4. Projects & Tasks</h3>
+                                <p class="text-sm text-gray-600">Project and task management system</p>
+                            </div>
+                        </div>
+                        <div class="access-indicator" id="tasks-access">
+                            <span class="px-3 py-1 rounded-full text-sm font-medium">Full Access</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Tasks (All)</h4>
+                                <div class="permission-status" id="tasks-view-all">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Tasks (Team)</h4>
+                                <div class="permission-status" id="tasks-view-team">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Tasks (Self)</h4>
+                                <div class="permission-status" id="tasks-view-self">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Add Task</h4>
+                                <div class="permission-status" id="tasks-add">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Edit Task</h4>
+                                <div class="permission-status" id="tasks-edit">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Delete Task</h4>
+                                <div class="permission-status" id="tasks-delete">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Export / Download Tasks</h4>
+                                <div class="permission-status" id="tasks-export">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar -->
+            <div class="border-b border-gray-200">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                <span class="text-2xl">📅</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">5. Calendar</h3>
+                                <p class="text-sm text-gray-600">Calendar and event management</p>
+                            </div>
+                        </div>
+                        <div class="access-indicator" id="calendar-access">
+                            <span class="px-3 py-1 rounded-full text-sm font-medium">Full Access</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Events (All)</h4>
+                                <div class="permission-status" id="calendar-view-all">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Events (Team)</h4>
+                                <div class="permission-status" id="calendar-view-team">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Events (Self)</h4>
+                                <div class="permission-status" id="calendar-view-self">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Add Event</h4>
+                                <div class="permission-status" id="calendar-add">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Edit Event</h4>
+                                <div class="permission-status" id="calendar-edit">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Delete Event</h4>
+                                <div class="permission-status" id="calendar-delete">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Export / Download Calendar</h4>
+                                <div class="permission-status" id="calendar-export">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team -->
+            <div class="border-b border-gray-200">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center">
+                                <span class="text-2xl">👥</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">6. Team</h3>
+                                <p class="text-sm text-gray-600">Team member management</p>
+                            </div>
+                        </div>
+                        <div class="access-indicator" id="team-access">
+                            <span class="px-3 py-1 rounded-full text-sm font-medium">Full Access</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Team (All)</h4>
+                                <div class="permission-status" id="team-view-all">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Team (Self)</h4>
+                                <div class="permission-status" id="team-view-self">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Add Team Member</h4>
+                                <div class="permission-status" id="team-add">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Edit Team Member</h4>
+                                <div class="permission-status" id="team-edit">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Delete Team Member</h4>
+                                <div class="permission-status" id="team-delete">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Export / Download Team</h4>
+                                <div class="permission-status" id="team-export">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance -->
+            <div class="border-b border-gray-200">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
+                                <span class="text-2xl">⏰</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">7. Attendance</h3>
+                                <p class="text-sm text-gray-600">Attendance tracking and management</p>
+                            </div>
+                        </div>
+                        <div class="access-indicator" id="attendance-access">
+                            <span class="px-3 py-1 rounded-full text-sm font-medium">Full Access</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Attendance (All)</h4>
+                                <div class="permission-status" id="attendance-view-all">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Attendance (Team)</h4>
+                                <div class="permission-status" id="attendance-view-team">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Attendance (Self)</h4>
+                                <div class="permission-status" id="attendance-view-self">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Add Attendance</h4>
+                                <div class="permission-status" id="attendance-add">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Edit Attendance</h4>
+                                <div class="permission-status" id="attendance-edit">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Delete Attendance</h4>
+                                <div class="permission-status" id="attendance-delete">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Export / Download Attendance</h4>
+                                <div class="permission-status" id="attendance-export">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaves -->
+            <div class="border-b border-gray-200">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                <span class="text-2xl">🏖️</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">8. Leaves</h3>
+                                <p class="text-sm text-gray-600">Leave management and approval</p>
+                            </div>
+                        </div>
+                        <div class="access-indicator" id="leaves-access">
+                            <span class="px-3 py-1 rounded-full text-sm font-medium">Full Access</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Leaves (All)</h4>
+                                <div class="permission-status" id="leaves-view-all">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Leaves (Team)</h4>
+                                <div class="permission-status" id="leaves-view-team">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Leaves (Self)</h4>
+                                <div class="permission-status" id="leaves-view-self">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Add Leave</h4>
+                                <div class="permission-status" id="leaves-add">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Edit Leave</h4>
+                                <div class="permission-status" id="leaves-edit">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Delete Leave</h4>
+                                <div class="permission-status" id="leaves-delete">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Export / Download Leaves</h4>
+                                <div class="permission-status" id="leaves-export">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payroll -->
+            <div class="border-b border-gray-200">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <span class="text-2xl">💰</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">9. Payroll</h3>
+                                <p class="text-sm text-gray-600">Payroll management and processing</p>
+                            </div>
+                        </div>
+                        <div class="access-indicator" id="payroll-access">
+                            <span class="px-3 py-1 rounded-full text-sm font-medium">Full Access</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Payroll (All)</h4>
+                                <div class="permission-status" id="payroll-view-all">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Payroll (Team)</h4>
+                                <div class="permission-status" id="payroll-view-team">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Payroll (Self)</h4>
+                                <div class="permission-status" id="payroll-view-self">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Download Payroll</h4>
+                                <div class="permission-status" id="payroll-download">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Export Payroll</h4>
+                                <div class="permission-status" id="payroll-export">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports -->
+            <div class="border-b border-gray-200">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+                                <span class="text-2xl">📈</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">10. Reports</h3>
+                                <p class="text-sm text-gray-600">Analytics and reporting system</p>
+                            </div>
+                        </div>
+                        <div class="access-indicator" id="reports-access">
+                            <span class="px-3 py-1 rounded-full text-sm font-medium">Full Access</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Reports (All)</h4>
+                                <div class="permission-status" id="reports-view-all">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Reports (Team)</h4>
+                                <div class="permission-status" id="reports-view-team">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Reports (Self)</h4>
+                                <div class="permission-status" id="reports-view-self">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Add Report</h4>
+                                <div class="permission-status" id="reports-add">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Edit Report</h4>
+                                <div class="permission-status" id="reports-edit">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Delete Report</h4>
+                                <div class="permission-status" id="reports-delete">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Export / Download Reports</h4>
+                                <div class="permission-status" id="reports-export">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div>
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-violet-100 rounded-lg flex items-center justify-center">
+                                <span class="text-2xl">🔔</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">11. Notifications</h3>
+                                <p class="text-sm text-gray-600">Notification management and preferences</p>
+                            </div>
+                        </div>
+                        <div class="access-indicator" id="notifications-access">
+                            <span class="px-3 py-1 rounded-full text-sm font-medium">Full Access</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Notifications (All)</h4>
+                                <div class="permission-status" id="notifications-view-all">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Notifications (Team)</h4>
+                                <div class="permission-status" id="notifications-view-team">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">View Notifications (Self)</h4>
+                                <div class="permission-status" id="notifications-view-self">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Add Notification</h4>
+                                <div class="permission-status" id="notifications-add">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Edit Notification</h4>
+                                <div class="permission-status" id="notifications-edit">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Delete Notification</h4>
+                                <div class="permission-status" id="notifications-delete">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-medium text-gray-900">Export / Download Notifications</h4>
+                                <div class="permission-status" id="notifications-export">
+                                    <span class="text-sm text-green-600">✓ ON</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Permission Summary -->
+        <div class="mt-8 bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Current Role Permission Summary</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full mx-auto mb-3 flex items-center justify-center">
+                        <span class="text-2xl text-green-600" id="onCount">✓</span>
+                    </div>
+                    <h4 class="font-bold text-green-600" id="onText">Permissions ON</h4>
+                    <p class="text-sm text-gray-600">Allowed Permissions</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full mx-auto mb-3 flex items-center justify-center">
+                        <span class="text-2xl text-red-600" id="offCount">✗</span>
+                    </div>
+                    <h4 class="font-bold text-red-600" id="offText">Permissions OFF</h4>
+                    <p class="text-sm text-gray-600">Denied Permissions</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Role Modal -->
+    <div id="createRoleModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-6xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">Create New Role</h3>
+                <button onclick="closeCreateRoleModal()" class="text-gray-400 hover:text-gray-600">
+                    <span class="text-2xl">×</span>
+                </button>
+            </div>
+            
+            <form onsubmit="createNewRole(event)">
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Role Name</label>
+                    <input type="text" id="newRoleName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter role name" required>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Role Description</label>
+                    <textarea id="newRoleDescription" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Describe the role's purpose"></textarea>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-4">Permission Settings</label>
+                    <div class="space-y-6" id="permissionSettings">
+                        <!-- Permission settings will be populated here -->
+                    </div>
+                </div>
+
+                <div class="flex space-x-3">
+                    <button type="button" onclick="closeCreateRoleModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        Create Role
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Manage Roles Modal -->
+    <div id="manageRolesModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">Manage Roles</h3>
+                <button onclick="closeManageRolesModal()" class="text-gray-400 hover:text-gray-600">
+                    <span class="text-2xl">×</span>
+                </button>
+            </div>
+            
+            <div class="space-y-4" id="rolesList">
+                <!-- Roles list will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Role Modal -->
+    <div id="editRoleModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-6xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-900">Edit Role: <span id="editRoleName"></span></h3>
+                    <p class="text-sm text-gray-600 mt-1">Modify permissions for this role</p>
+                </div>
+                <button onclick="closeEditRoleModal()" class="text-gray-400 hover:text-gray-600">
+                    <span class="text-2xl">×</span>
+                </button>
+            </div>
+            
+            <form onsubmit="saveRoleChanges(event)">
+                <div class="mb-6" id="editRoleNameContainer">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Role Name</label>
+                    <input type="text" id="editRoleNameInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter role name" required>
+                </div>
+                
+                <div class="mb-6" id="editRoleDescriptionContainer">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Role Description</label>
+                    <textarea id="editRoleDescription" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Describe the role's purpose"></textarea>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-4">Permission Settings</label>
+                    <div class="space-y-6" id="editPermissionSettings">
+                        <!-- Permission settings will be populated here -->
+                    </div>
+                </div>
+
+                <div class="flex space-x-3">
+                    <button type="button" onclick="closeEditRoleModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="button" onclick="resetRoleToDefault()" class="px-4 py-2 border border-orange-300 text-orange-700 rounded-lg hover:bg-orange-50 transition-colors" id="resetRoleBtn">
+                        Reset to Default
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Store original default permissions for reset functionality
+        let defaultPermissions = {};
+        let currentEditingRole = null;
+
+        // Message system for consistent notifications
+        function showMessage(type, title, message) {
+            let icon = '';
+            let bgColor = '';
+            
+            switch(type) {
+                case 'success':
+                    icon = '🎉';
+                    bgColor = 'bg-green-100 border-green-500 text-green-800';
+                    break;
+                case 'error':
+                    icon = '❌';
+                    bgColor = 'bg-red-100 border-red-500 text-red-800';
+                    break;
+                case 'warning':
+                    icon = '⚠️';
+                    bgColor = 'bg-yellow-100 border-yellow-500 text-yellow-800';
+                    break;
+                case 'info':
+                    icon = 'ℹ️';
+                    bgColor = 'bg-blue-100 border-blue-500 text-blue-800';
+                    break;
+                default:
+                    icon = 'ℹ️';
+                    bgColor = 'bg-gray-100 border-gray-500 text-gray-800';
+            }
+            
+            // For now, use alert but with consistent formatting
+            alert(`${icon} ${title}\n\n${message}`);
+        }
+
+        // Access Control Matrix - ON/OFF permissions for each role
+        let accessMatrix = {
+            'Admin': {
+                // Dashboard
+                'dashboard-view-all': true,
+                'dashboard-view-team': true,
+                'dashboard-view-self': true,
+                // Clients
+                'clients-view-all': true,
+                'clients-view-team': true,
+                'clients-view-self': true,
+                'clients-add': true,
+                'clients-edit': true,
+                'clients-delete': true,
+                'clients-export': true,
+                // Leads
+                'leads-view-all': true,
+                'leads-view-team': true,
+                'leads-view-self': true,
+                'leads-add': true,
+                'leads-edit': true,
+                'leads-delete': true,
+                'leads-convert': true,
+                'leads-export': true,
+                // Tasks
+                'tasks-view-all': true,
+                'tasks-view-team': true,
+                'tasks-view-self': true,
+                'tasks-add': true,
+                'tasks-edit': true,
+                'tasks-delete': true,
+                'tasks-export': true,
+                // Calendar
+                'calendar-view-all': true,
+                'calendar-view-team': true,
+                'calendar-view-self': true,
+                'calendar-add': true,
+                'calendar-edit': true,
+                'calendar-delete': true,
+                'calendar-export': true,
+                // Team
+                'team-view-all': true,
+                'team-view-self': true,
+                'team-add': true,
+                'team-edit': true,
+                'team-delete': true,
+                'team-export': true,
+                // Attendance
+                'attendance-view-all': true,
+                'attendance-view-team': true,
+                'attendance-view-self': true,
+                'attendance-add': true,
+                'attendance-edit': true,
+                'attendance-delete': true,
+                'attendance-export': true,
+                // Leaves
+                'leaves-view-all': true,
+                'leaves-view-team': true,
+                'leaves-view-self': true,
+                'leaves-add': true,
+                'leaves-edit': true,
+                'leaves-delete': true,
+                'leaves-export': true,
+                // Payroll
+                'payroll-view-all': true,
+                'payroll-view-team': true,
+                'payroll-view-self': true,
+                'payroll-download': true,
+                'payroll-export': true,
+                // Reports
+                'reports-view-all': true,
+                'reports-view-team': true,
+                'reports-view-self': true,
+                'reports-add': true,
+                'reports-edit': true,
+                'reports-delete': true,
+                'reports-export': true,
+                // Notifications
+                'notifications-view-all': true,
+                'notifications-view-team': true,
+                'notifications-view-self': true,
+                'notifications-add': true,
+                'notifications-edit': true,
+                'notifications-delete': true,
+                'notifications-export': true
+            },
+            'Manager': {
+                // Dashboard
+                'dashboard-view-all': false,
+                'dashboard-view-team': false,
+                'dashboard-view-self': true,
+                // Clients
+                'clients-view-all': false,
+                'clients-view-team': false,
+                'clients-view-self': true,
+                'clients-add': false,
+                'clients-edit': false,
+                'clients-delete': false,
+                'clients-export': false,
+                // Leads
+                'leads-view-all': false,
+                'leads-view-team': false,
+                'leads-view-self': true,
+                'leads-add': true,
+                'leads-edit': true,
+                'leads-delete': false,
+                'leads-convert': false,
+                'leads-export': false,
+                // Tasks
+                'tasks-view-all': false,
+                'tasks-view-team': false,
+                'tasks-view-self': true,
+                'tasks-add': true,
+                'tasks-edit': true,
+                'tasks-delete': false,
+                'tasks-export': false,
+                // Calendar
+                'calendar-view-all': false,
+                'calendar-view-team': false,
+                'calendar-view-self': true,
+                'calendar-add': true,
+                'calendar-edit': true,
+                'calendar-delete': true,
+                'calendar-export': false,
+                // Team
+                'team-view-all': false,
+                'team-view-self': true,
+                'team-add': false,
+                'team-edit': false,
+                'team-delete': false,
+                'team-export': false,
+                // Attendance
+                'attendance-view-all': false,
+                'attendance-view-team': false,
+                'attendance-view-self': true,
+                'attendance-add': true,
+                'attendance-edit': false,
+                'attendance-delete': false,
+                'attendance-export': false,
+                // Leaves
+                'leaves-view-all': false,
+                'leaves-view-team': false,
+                'leaves-view-self': true,
+                'leaves-add': true,
+                'leaves-edit': true,
+                'leaves-delete': true,
+                'leaves-export': false,
+                // Payroll
+                'payroll-view-all': false,
+                'payroll-view-team': false,
+                'payroll-view-self': true,
+                'payroll-download': true,
+                'payroll-export': false,
+                // Reports
+                'reports-view-all': false,
+                'reports-view-team': false,
+                'reports-view-self': true,
+                'reports-add': false,
+                'reports-edit': false,
+                'reports-delete': false,
+                'reports-export': false,
+                // Notifications
+                'notifications-view-all': false,
+                'notifications-view-team': false,
+                'notifications-view-self': true,
+                'notifications-add': false,
+                'notifications-edit': false,
+                'notifications-delete': false,
+                'notifications-export': false
+            },
+            'Employee': {
+                // Dashboard
+                'dashboard-view-all': false,
+                'dashboard-view-team': false,
+                'dashboard-view-self': true,
+                // Clients
+                'clients-view-all': false,
+                'clients-view-team': false,
+                'clients-view-self': false,
+                'clients-add': false,
+                'clients-edit': false,
+                'clients-delete': false,
+                'clients-export': false,
+                // Leads
+                'leads-view-all': false,
+                'leads-view-team': false,
+                'leads-view-self': true,
+                'leads-add': true,
+                'leads-edit': true,
+                'leads-delete': false,
+                'leads-convert': false,
+                'leads-export': false,
+                // Tasks
+                'tasks-view-all': false,
+                'tasks-view-team': false,
+                'tasks-view-self': true,
+                'tasks-add': true,
+                'tasks-edit': true,
+                'tasks-delete': false,
+                'tasks-export': false,
+                // Calendar
+                'calendar-view-all': false,
+                'calendar-view-team': false,
+                'calendar-view-self': true,
+                'calendar-add': true,
+                'calendar-edit': true,
+                'calendar-delete': true,
+                'calendar-export': false,
+                // Team
+                'team-view-all': false,
+                'team-view-self': true,
+                'team-add': false,
+                'team-edit': false,
+                'team-delete': false,
+                'team-export': false,
+                // Attendance
+                'attendance-view-all': false,
+                'attendance-view-team': false,
+                'attendance-view-self': true,
+                'attendance-add': true,
+                'attendance-edit': false,
+                'attendance-delete': false,
+                'attendance-export': false,
+                // Leaves
+                'leaves-view-all': false,
+                'leaves-view-team': false,
+                'leaves-view-self': true,
+                'leaves-add': true,
+                'leaves-edit': true,
+                'leaves-delete': true,
+                'leaves-export': false,
+                // Payroll
+                'payroll-view-all': false,
+                'payroll-view-team': false,
+                'payroll-view-self': true,
+                'payroll-download': true,
+                'payroll-export': false,
+                // Reports
+                'reports-view-all': false,
+                'reports-view-team': false,
+                'reports-view-self': true,
+                'reports-add': false,
+                'reports-edit': false,
+                'reports-delete': false,
+                'reports-export': false,
+                // Notifications
+                'notifications-view-all': false,
+                'notifications-view-team': false,
+                'notifications-view-self': true,
+                'notifications-add': false,
+                'notifications-edit': false,
+                'notifications-delete': false,
+                'notifications-export': false
+            },
+            'Client': {
+                // Dashboard
+                'dashboard-view-all': false,
+                'dashboard-view-team': false,
+                'dashboard-view-self': true,
+                // Clients
+                'clients-view-all': false,
+                'clients-view-team': false,
+                'clients-view-self': false,
+                'clients-add': false,
+                'clients-edit': false,
+                'clients-delete': false,
+                'clients-export': false,
+                // Leads
+                'leads-view-all': false,
+                'leads-view-team': false,
+                'leads-view-self': false,
+                'leads-add': false,
+                'leads-edit': false,
+                'leads-delete': false,
+                'leads-convert': false,
+                'leads-export': false,
+                // Tasks
+                'tasks-view-all': false,
+                'tasks-view-team': false,
+                'tasks-view-self': true,
+                'tasks-add': false,
+                'tasks-edit': false,
+                'tasks-delete': false,
+                'tasks-export': false,
+                // Calendar
+                'calendar-view-all': false,
+                'calendar-view-team': false,
+                'calendar-view-self': true,
+                'calendar-add': false,
+                'calendar-edit': false,
+                'calendar-delete': false,
+                'calendar-export': false,
+                // Team
+                'team-view-all': false,
+                'team-view-self': false,
+                'team-add': false,
+                'team-edit': false,
+                'team-delete': false,
+                'team-export': false,
+                // Attendance
+                'attendance-view-all': false,
+                'attendance-view-team': false,
+                'attendance-view-self': false,
+                'attendance-add': false,
+                'attendance-edit': false,
+                'attendance-delete': false,
+                'attendance-export': false,
+                // Leaves
+                'leaves-view-all': false,
+                'leaves-view-team': false,
+                'leaves-view-self': false,
+                'leaves-add': false,
+                'leaves-edit': false,
+                'leaves-delete': false,
+                'leaves-export': false,
+                // Payroll
+                'payroll-view-all': false,
+                'payroll-view-team': false,
+                'payroll-view-self': false,
+                'payroll-download': false,
+                'payroll-export': false,
+                // Reports
+                'reports-view-all': false,
+                'reports-view-team': false,
+                'reports-view-self': true,
+                'reports-add': false,
+                'reports-edit': false,
+                'reports-delete': false,
+                'reports-export': false,
+                // Notifications
+                'notifications-view-all': false,
+                'notifications-view-team': false,
+                'notifications-view-self': true,
+                'notifications-add': false,
+                'notifications-edit': false,
+                'notifications-delete': false,
+                'notifications-export': false
+            }
+        };
+
+        // Role metadata
+        let roleMetadata = {
+            'Admin': { description: 'Full control over all system features and data', color: 'red', isCustom: false },
+            'Manager': { description: 'Self-access only by default - Admin must enable team permissions', color: 'orange', isCustom: false },
+            'Employee': { description: 'Control over self only - limited access', color: 'blue', isCustom: false },
+            'Client': { description: 'Access only to Dashboard, Tasks, Calendar, Reports, Notifications related to their own projects', color: 'green', isCustom: false }
+        };
+
+        let currentRole = 'Admin';
+
+        // Permission definitions
+        const permissionDefinitions = {
+            'Dashboard': {
+                'dashboard-view-all': 'View Dashboard (All)',
+                'dashboard-view-team': 'View Dashboard (Team)',
+                'dashboard-view-self': 'View Dashboard (Self)'
+            },
+            'Clients': {
+                'clients-view-all': 'View Clients (All)',
+                'clients-view-team': 'View Clients (Team)',
+                'clients-view-self': 'View Clients (Self)',
+                'clients-add': 'Add Client',
+                'clients-edit': 'Edit Client',
+                'clients-delete': 'Delete Client',
+                'clients-export': 'Export / Download Clients'
+            },
+            'Leads': {
+                'leads-view-all': 'View Leads (All)',
+                'leads-view-team': 'View Leads (Team)',
+                'leads-view-self': 'View Leads (Self)',
+                'leads-add': 'Add Lead',
+                'leads-edit': 'Edit Lead',
+                'leads-delete': 'Delete Lead',
+                'leads-convert': 'Follow up status update',
+                'leads-export': 'Import/Export / Download Leads'
+            },
+            'Projects & Tasks': {
+                'tasks-view-all': 'View Tasks (All)',
+                'tasks-view-team': 'View Tasks (Team)',
+                'tasks-view-self': 'View Tasks (Self)',
+                'tasks-add': 'Add Task',
+                'tasks-edit': 'Edit Task',
+                'tasks-delete': 'Delete Task',
+                'tasks-export': 'Export / Download Tasks'
+            },
+            'Calendar': {
+                'calendar-view-all': 'View Events (All)',
+                'calendar-view-team': 'View Events (Team)',
+                'calendar-view-self': 'View Events (Self)',
+                'calendar-add': 'Add Event',
+                'calendar-edit': 'Edit Event',
+                'calendar-delete': 'Delete Event',
+                'calendar-export': 'Export / Download Calendar'
+            },
+            'Team': {
+                'team-view-all': 'View Team (All)',
+                'team-view-self': 'View Team (Self)',
+                'team-add': 'Add Team Member',
+                'team-edit': 'Edit Team Member',
+                'team-delete': 'Delete Team Member',
+                'team-export': 'Export / Download Team'
+            },
+            'Attendance': {
+                'attendance-view-all': 'View Attendance (All)',
+                'attendance-view-team': 'View Attendance (Team)',
+                'attendance-view-self': 'View Attendance (Self)',
+                'attendance-add': 'Add Attendance',
+                'attendance-edit': 'Edit Attendance',
+                'attendance-delete': 'Delete Attendance',
+                'attendance-export': 'Export / Download Attendance'
+            },
+            'Leaves': {
+                'leaves-view-all': 'View Leaves (All)',
+                'leaves-view-team': 'View Leaves (Team)',
+                'leaves-view-self': 'View Leaves (Self)',
+                'leaves-add': 'Add Leave',
+                'leaves-edit': 'Edit Leave',
+                'leaves-delete': 'Delete Leave',
+                'leaves-export': 'Export / Download Leaves'
+            },
+            'Payroll': {
+                'payroll-view-all': 'View Payroll (All)',
+                'payroll-view-team': 'View Payroll (Team)',
+                'payroll-view-self': 'View Payroll (Self)',
+                'payroll-download': 'Download Payroll',
+                'payroll-export': 'Export Payroll'
+            },
+            'Reports': {
+                'reports-view-all': 'View Reports (All)',
+                'reports-view-team': 'View Reports (Team)',
+                'reports-view-self': 'View Reports (Self)',
+                'reports-add': 'Add Report',
+                'reports-edit': 'Edit Report',
+                'reports-delete': 'Delete Report',
+                'reports-export': 'Export / Download Reports'
+            },
+            'Notifications': {
+                'notifications-view-all': 'View Notifications (All)',
+                'notifications-view-team': 'View Notifications (Team)',
+                'notifications-view-self': 'View Notifications (Self)',
+                'notifications-add': 'Add Notification',
+                'notifications-edit': 'Edit Notification',
+                'notifications-delete': 'Delete Notification',
+                'notifications-export': 'Export / Download Notifications'
+            }
+        };
+
+        // Helper function to check if current user can manage roles
+        function canManageRoles() {
+            const rolePermissions = accessMatrix[currentRole];
+            return rolePermissions['team-add'];
+        }
+
+        // Initialize the system
+        function initializeSystem() {
+            // Store default permissions for reset functionality
+            defaultPermissions = JSON.parse(JSON.stringify(accessMatrix));
+            populateRoleSelector();
+            setCurrentRole('Admin');
+        }
+
+        // Populate role selector
+        function populateRoleSelector() {
+            const roleSelector = document.getElementById('roleSelector');
+            const roles = Object.keys(accessMatrix);
+            
+            roleSelector.innerHTML = roles.map(role => {
+                const metadata = roleMetadata[role];
+                const colorClass = getColorClass(metadata.color);
+                const customBadge = metadata.isCustom ? '<span class="absolute -top-1 -right-1 w-3 h-3 bg-purple-500 rounded-full"></span>' : '';
+                
+                return `
+                    <button onclick="setCurrentRole('${role}')" class="role-btn role-card p-4 rounded-lg border-2 transition-all relative" data-role="${role}">
+                        ${customBadge}
+                        <div class="w-12 h-12 ${colorClass} rounded-full mx-auto mb-2 flex items-center justify-center">
+                            <span class="text-white font-bold">${role.charAt(0)}</span>
+                        </div>
+                        <h3 class="font-bold text-${metadata.color}-700">${role}</h3>
+                        <p class="text-xs text-${metadata.color}-600 mt-1">${metadata.description}</p>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        // Get color class for role
+        function getColorClass(color) {
+            const colorMap = {
+                'red': 'bg-red-500',
+                'orange': 'bg-orange-500',
+                'blue': 'bg-blue-500',
+                'green': 'bg-green-500',
+                'purple': 'bg-purple-500',
+                'indigo': 'bg-indigo-500',
+                'pink': 'bg-pink-500',
+                'yellow': 'bg-yellow-500'
+            };
+            return colorMap[color] || 'bg-gray-500';
+        }
+
+        // Set current role and update UI
+        function setCurrentRole(role) {
+            const previousRole = currentRole;
+            currentRole = role;
+            document.getElementById('currentRole').textContent = role;
+            
+            // Update role button styles
+            document.querySelectorAll('.role-btn').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'bg-blue-50');
+                btn.classList.add('border-gray-200', 'bg-white');
+            });
+            
+            const activeBtn = document.querySelector(`[data-role="${role}"]`);
+            if (activeBtn) {
+                activeBtn.classList.remove('border-gray-200', 'bg-white');
+                activeBtn.classList.add('border-blue-500', 'bg-blue-50');
+            }
+            
+            // Update Create Role button visibility and state
+            updateCreateRoleButton();
+            
+            updatePermissions();
+            
+            // Show success message only if role actually changed (not initial load)
+            if (previousRole && previousRole !== role) {
+                // Count permissions for the new role
+                const rolePermissions = accessMatrix[role];
+                const onCount = Object.values(rolePermissions).filter(perm => perm === true).length;
+                const totalCount = Object.keys(rolePermissions).length;
+                const roleInfo = roleMetadata[role];
+                
+                // Show message immediately
+                showMessage('success', '🎉 Role Switched Successfully!', `✅ SWITCH DETAILS:\n👤 Previous Role: "${previousRole}"\n👤 Current Role: "${role}"\n📋 Description: "${roleInfo.description}"\n🔐 Active Permissions: ${onCount}/${totalCount}\n📅 Switched: ${new Date().toLocaleString()}\n\n🔄 VIEW UPDATED:\n• Permission matrix refreshed\n• Access levels updated\n• UI perspective changed\n• Role-specific features enabled\n\n💡 You are now viewing the system from the "${role}" perspective with ${onCount} active permissions!`);
+            }
+        }
+
+        // Update Create Role button based on "Add Team Member" permission
+        function updateCreateRoleButton() {
+            const createRoleBtn = document.getElementById('createRoleBtn');
+            const rolePermissions = accessMatrix[currentRole];
+            const canAddTeamMember = rolePermissions['team-add'];
+            
+            if (canAddTeamMember) {
+                // Has "Add Team Member" permission: Full access
+                createRoleBtn.disabled = false;
+                createRoleBtn.className = 'bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors';
+                createRoleBtn.innerHTML = '+ Create Role';
+                createRoleBtn.title = 'Create a new role (requires Add Team Member permission)';
+            } else {
+                // No "Add Team Member" permission: Disabled with visual indication
+                createRoleBtn.disabled = true;
+                createRoleBtn.className = 'bg-gray-400 text-gray-200 px-4 py-2 rounded-lg cursor-not-allowed';
+                createRoleBtn.innerHTML = '🔒 No Permission';
+                createRoleBtn.title = 'Requires "Add Team Member" permission to create roles';
+            }
+        }
+
+        // Switch role function for header button
+        function switchRole() {
+            const roles = Object.keys(accessMatrix);
+            const currentIndex = roles.indexOf(currentRole);
+            const nextIndex = (currentIndex + 1) % roles.length;
+            setCurrentRole(roles[nextIndex]);
+        }
+
+        // Show create role modal
+        function showCreateRoleModal() {
+            // Check if current role has "Add Team Member" permission
+            const rolePermissions = accessMatrix[currentRole];
+            const canAddTeamMember = rolePermissions['team-add'];
+            
+            if (!canAddTeamMember) {
+                showMessage('error', '❌ Access Denied!', 'Only users with "Add Team Member" permission can create new roles.\n\nCurrent role: ' + currentRole + '\nRequired permission: Add Team Member');
+                return;
+            }
+            
+            populatePermissionSettings();
+            document.getElementById('createRoleModal').classList.remove('hidden');
+        }
+
+        // Close create role modal
+        function closeCreateRoleModal() {
+            document.getElementById('createRoleModal').classList.add('hidden');
+            document.getElementById('newRoleName').value = '';
+            document.getElementById('newRoleDescription').value = '';
+        }
+
+        // Show manage roles modal
+        function showManageRolesModal() {
+            populateRolesList();
+            document.getElementById('manageRolesModal').classList.remove('hidden');
+        }
+
+        // Close manage roles modal
+        function closeManageRolesModal() {
+            document.getElementById('manageRolesModal').classList.add('hidden');
+        }
+
+        // Populate permission settings in create role modal
+        function populatePermissionSettings() {
+            const container = document.getElementById('permissionSettings');
+            
+            container.innerHTML = Object.keys(permissionDefinitions).map(menuName => {
+                const permissions = permissionDefinitions[menuName];
+                
+                return `
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-bold text-gray-900 mb-3">${menuName}</h4>
+                        <div class="space-y-3">
+                            ${Object.keys(permissions).map(permId => `
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-700">${permissions[permId]}</span>
+                                    <div class="flex space-x-2">
+                                        <button type="button" onclick="togglePermission('${permId}', true)" class="permission-toggle px-3 py-1 rounded text-sm font-medium bg-green-100 text-green-800 hover:bg-green-200 border-2 border-transparent" data-perm="${permId}" data-state="on">
+                                            ✓ ON
+                                        </button>
+                                        <button type="button" onclick="togglePermission('${permId}', false)" class="permission-toggle px-3 py-1 rounded text-sm font-medium bg-red-100 text-red-800 hover:bg-red-200 border-2 border-transparent" data-perm="${permId}" data-state="off">
+                                            ✗ OFF
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Toggle permission for new role
+        function togglePermission(permissionId, isOn) {
+            // Remove active class from all buttons for this permission
+            document.querySelectorAll(`[data-perm="${permissionId}"]`).forEach(btn => {
+                btn.classList.remove('border-blue-500', 'bg-green-200', 'bg-red-200');
+                btn.classList.add('border-transparent');
+                if (btn.dataset.state === 'on') {
+                    btn.classList.add('bg-green-100');
+                } else {
+                    btn.classList.add('bg-red-100');
+                }
+                btn.dataset.selected = 'false';
+            });
+            
+            // Add active class to selected button
+            const selectedBtn = document.querySelector(`[data-perm="${permissionId}"][data-state="${isOn ? 'on' : 'off'}"]`);
+            selectedBtn.classList.remove('border-transparent');
+            selectedBtn.classList.add('border-blue-500');
+            
+            if (isOn) {
+                selectedBtn.classList.remove('bg-green-100');
+                selectedBtn.classList.add('bg-green-200');
+            } else {
+                selectedBtn.classList.remove('bg-red-100');
+                selectedBtn.classList.add('bg-red-200');
+            }
+            
+            // Store the permission
+            selectedBtn.dataset.selected = 'true';
+        }
+
+        // Create new role
+        function createNewRole(event) {
+            event.preventDefault();
+            
+            const roleName = document.getElementById('newRoleName').value.trim();
+            const roleDescription = document.getElementById('newRoleDescription').value.trim();
+            
+            if (!roleName) {
+                showMessage('error', '❌ Validation Error!', 'Please enter a role name.\n\nRole name cannot be empty.');
+                return;
+            }
+            
+            // Check for duplicate role names (case-insensitive)
+            const existingRoles = Object.keys(accessMatrix);
+            const duplicateRole = existingRoles.find(existing => 
+                existing.toLowerCase() === roleName.toLowerCase()
+            );
+            
+            if (duplicateRole) {
+                showMessage('error', '❌ Duplicate Role Name Error!', `🚫 Role Name: "${roleName}"\n📋 Existing Role: "${duplicateRole}"\n\n⚠️ CONFLICT DETAILS:\n• Role names must be unique (case-insensitive)\n• A role with this name already exists in the system\n• Please choose a different name for your new role\n\n💡 SUGGESTIONS:\n• Add a prefix/suffix (e.g., "${roleName}_Custom", "New_${roleName}")\n• Use a more specific name (e.g., "${roleName}_V2", "Enhanced_${roleName}")\n• Try a completely different name\n\nPlease change the role name and try again.`);
+                
+                // Focus back on the name input for easy correction
+                document.getElementById('newRoleName').focus();
+                document.getElementById('newRoleName').select();
+                return;
+            }
+            
+            // Collect permissions
+            const newRolePermissions = {};
+            const selectedPermissions = document.querySelectorAll('[data-selected="true"]');
+            
+            // Set default permissions to false (OFF)
+            Object.keys(permissionDefinitions).forEach(menuName => {
+                Object.keys(permissionDefinitions[menuName]).forEach(permId => {
+                    newRolePermissions[permId] = false;
+                });
+            });
+            
+            // Override with selected permissions
+            selectedPermissions.forEach(btn => {
+                const permId = btn.dataset.perm;
+                const isOn = btn.dataset.state === 'on';
+                newRolePermissions[permId] = isOn;
+            });
+            
+            // Count permissions for success message
+            const onPermissions = Object.values(newRolePermissions).filter(p => p === true).length;
+            const totalPermissions = Object.keys(newRolePermissions).length;
+            
+            // Add new role to access matrix
+            accessMatrix[roleName] = newRolePermissions;
+            
+            // Add role metadata
+            const colors = ['purple', 'indigo', 'pink', 'yellow'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            roleMetadata[roleName] = {
+                description: roleDescription || 'Custom role',
+                color: randomColor,
+                isCustom: true
+            };
+            
+            // Update UI
+            populateRoleSelector();
+            setCurrentRole(roleName);
+            closeCreateRoleModal();
+            
+            // Show detailed success message
+            showMessage('success', '🎉 Role Created Successfully!', `✅ CREATION DETAILS:\n📝 Role Name: "${roleName}"\n📋 Description: "${roleDescription || 'Custom role'}"\n🎯 Active Permissions: ${onPermissions}/${totalPermissions}\n🎨 Role Color: ${randomColor.charAt(0).toUpperCase() + randomColor.slice(1)}\n📅 Created: ${new Date().toLocaleString()}\n\n🚀 NEXT STEPS:\n• Role is now active and ready for assignment\n• You can edit permissions anytime from Manage Roles\n• Users can be assigned this role immediately\n\n💡 The new custom role has been successfully added to the system!`);
+        }
+
+        // Populate roles list in manage modal
+        function populateRolesList() {
+            const container = document.getElementById('rolesList');
+            const roles = Object.keys(accessMatrix);
+            
+            container.innerHTML = roles.map(role => {
+                const metadata = roleMetadata[role];
+                const colorClass = getColorClass(metadata.color);
+                const isSystemRole = !metadata.isCustom;
+                
+                return `
+                    <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 ${colorClass} rounded-full flex items-center justify-center">
+                                <span class="text-white font-bold">${role.charAt(0)}</span>
+                            </div>
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <h4 class="font-medium text-gray-900">${role}</h4>
+                                    ${metadata.isCustom ? '<span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">Custom</span>' : '<span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">System</span>'}
+                                </div>
+                                <p class="text-sm text-gray-600">${metadata.description}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="setCurrentRole('${role}'); closeManageRolesModal();" class="px-3 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded text-sm font-medium transition-colors">
+                                👁️ View
+                            </button>
+                            ${canManageRoles() ? `
+                                ${role === 'Admin' ? `
+                                    <span class="px-3 py-1 text-red-600 text-sm font-medium bg-red-50 rounded">🔒 Permanently Protected</span>
+                                ` : `
+                                    <button onclick="editRole('${role}')" class="px-3 py-1 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded text-sm font-medium transition-colors">
+                                        ✏️ Edit
+                                    </button>
+                                    ${!isSystemRole ? `
+                                        <button onclick="deleteRole('${role}')" class="px-3 py-1 text-red-600 hover:text-white hover:bg-red-600 bg-red-50 rounded text-sm font-medium transition-colors">
+                                            🗑️ Delete
+                                        </button>
+                                    ` : `
+                                        <span class="px-3 py-1 text-gray-400 text-sm bg-gray-50 rounded">Protected</span>
+                                    `}
+                                `}
+                            ` : `
+                                <span class="px-3 py-1 text-gray-400 text-sm bg-gray-50 rounded">🔒 No Permission</span>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Delete role (only custom roles can be deleted)
+        function deleteRole(roleName) {
+            // Check if current role has "Add Team Member" permission
+            const rolePermissions = accessMatrix[currentRole];
+            const canAddTeamMember = rolePermissions['team-add'];
+            
+            if (!canAddTeamMember) {
+                showMessage('error', '❌ Access Denied!', 'Only users with "Add Team Member" permission can delete roles.\n\nCurrent role: ' + currentRole + '\nRequired permission: Add Team Member');
+                return;
+            }
+            
+            // CRITICAL SECURITY: Prevent any attempt to delete Admin role
+            if (roleName === 'Admin') {
+                showMessage('error', '🔒 Security Restriction!', 'Admin role cannot be deleted by any user for security reasons.\n\nThe Admin role is permanently protected.');
+                return;
+            }
+            
+            // Check if role exists
+            if (!roleMetadata[roleName]) {
+                showMessage('error', '❌ Error', 'Role not found.');
+                return;
+            }
+            
+            // Check if it's a custom role (only custom roles can be deleted)
+            if (!roleMetadata[roleName].isCustom) {
+                showMessage('error', '❌ Cannot Delete System Role!', 'Default system roles (Admin, Manager, Employee, Client) cannot be deleted for security reasons.\n\nYou can only edit their permissions or create new custom roles.');
+                return;
+            }
+            
+            // Show detailed warning for custom role deletion
+            const roleInfo = roleMetadata[roleName];
+            const permissionCount = Object.values(accessMatrix[roleName]).filter(p => p === true).length;
+            const totalPermissions = Object.keys(accessMatrix[roleName]).length;
+            
+            const warningMessage = `⚠️ DELETE CUSTOM ROLE WARNING ⚠️\n\n` +
+                `Role Name: "${roleName}"\n` +
+                `Description: "${roleInfo.description}"\n` +
+                `Active Permissions: ${permissionCount}/${totalPermissions}\n` +
+                `Role Type: Custom Role\n\n` +
+                `🚨 CRITICAL WARNINGS:\n` +
+                `• This action is PERMANENT and cannot be undone\n` +
+                `• All users assigned to this role will lose access\n` +
+                `• Users will need to be manually reassigned to other roles\n` +
+                `• All permission settings for this role will be lost forever\n\n` +
+                `Are you absolutely sure you want to DELETE this custom role?`;
+            
+            // First confirmation with detailed warning
+            if (confirm(warningMessage)) {
+                // Second confirmation for extra safety
+                const finalConfirm = prompt(`🔴 FINAL CONFIRMATION REQUIRED\n\nTo permanently delete the custom role "${roleName}", please type exactly: DELETE\n\n(This is your last chance to cancel)`);
+                
+                if (finalConfirm === 'DELETE') {
+                    // Perform deletion
+                    delete accessMatrix[roleName];
+                    delete roleMetadata[roleName];
+                    
+                    // If current viewing role was deleted, switch to Admin
+                    if (currentRole === roleName) {
+                        setCurrentRole('Admin');
+                    }
+                    
+                    // Update all UI components
+                    populateRoleSelector();
+                    populateRolesList();
+                    
+                    // Show success message
+                    showMessage('success', '🎉 Role Deleted Successfully!', `✅ DELETION DETAILS:\n🗑️ Role Name: "${roleName}"\n📋 Description: "${roleInfo.description}"\n🔢 Had Permissions: ${permissionCount}/${totalPermissions}\n📅 Deleted: ${new Date().toLocaleString()}\n\n🔄 SYSTEM UPDATES:\n• Role permanently removed from system\n• Roles list automatically refreshed\n• Role selector updated\n• All data cleaned up successfully\n\n⚠️ IMPORTANT REMINDER:\n• Any users with this role need reassignment\n• Check user accounts to prevent access issues\n• Consider creating replacement role if needed\n\n💡 Custom role deletion completed successfully!`);
+                } else if (finalConfirm !== null) {
+                    // User typed something but not "DELETE"
+                    showMessage('warning', '❌ Deletion Cancelled', 'Incorrect confirmation text entered.\n\nThe role has NOT been deleted for safety.');
+                }
+                // If finalConfirm is null, user clicked Cancel - no message needed
+            }
+        }
+
+        // Edit role function
+        function editRole(roleName) {
+            // Check if current role has "Add Team Member" permission
+            const rolePermissions = accessMatrix[currentRole];
+            const canAddTeamMember = rolePermissions['team-add'];
+            
+            if (!canAddTeamMember) {
+                showMessage('error', '❌ Access Denied!', 'Only users with "Add Team Member" permission can edit roles.\n\nCurrent role: ' + currentRole + '\nRequired permission: Add Team Member');
+                return;
+            }
+            
+            // CRITICAL SECURITY: Admin role permissions are PERMANENTLY PROTECTED
+            if (roleName === 'Admin') {
+                showMessage('error', '🔒 Permanent Security Protection!', 'Admin role permissions are permanently locked and cannot be modified by ANYONE.\n\nThis includes Admin users themselves for maximum security.\n\nAdmin permissions are hardcoded and immutable.');
+                return;
+            }
+            
+            currentEditingRole = roleName;
+            document.getElementById('editRoleName').textContent = roleName;
+            document.getElementById('editRoleNameInput').value = roleName;
+            document.getElementById('editRoleDescription').value = roleMetadata[roleName].description;
+            
+            // Show/hide name and description fields for system vs custom roles
+            const nameContainer = document.getElementById('editRoleNameContainer');
+            const descContainer = document.getElementById('editRoleDescriptionContainer');
+            
+            if (!roleMetadata[roleName].isCustom) {
+                // System roles: hide name field, hide description field
+                nameContainer.style.display = 'none';
+                descContainer.style.display = 'none';
+            } else {
+                // Custom roles: show both name and description fields
+                nameContainer.style.display = 'block';
+                descContainer.style.display = 'block';
+            }
+            
+            // Show/hide reset button for system roles
+            const resetBtn = document.getElementById('resetRoleBtn');
+            if (!roleMetadata[roleName].isCustom) {
+                resetBtn.style.display = 'block';
+            } else {
+                resetBtn.style.display = 'none';
+            }
+            
+            populateEditPermissionSettings(roleName);
+            document.getElementById('editRoleModal').classList.remove('hidden');
+            closeManageRolesModal();
+        }
+
+        // Close edit role modal
+        function closeEditRoleModal() {
+            document.getElementById('editRoleModal').classList.add('hidden');
+            currentEditingRole = null;
+        }
+
+        // Populate permission settings in edit role modal
+        function populateEditPermissionSettings(roleName) {
+            const container = document.getElementById('editPermissionSettings');
+            const rolePermissions = accessMatrix[roleName];
+            
+            container.innerHTML = Object.keys(permissionDefinitions).map(menuName => {
+                const permissions = permissionDefinitions[menuName];
+                
+                return `
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-bold text-gray-900 mb-3">${menuName}</h4>
+                        <div class="space-y-3">
+                            ${Object.keys(permissions).map(permId => {
+                                const currentPermission = rolePermissions[permId];
+                                return `
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-700">${permissions[permId]}</span>
+                                        <div class="flex space-x-2">
+                                            <button type="button" onclick="setEditPermission('${permId}', true)" class="edit-permission-selector px-3 py-1 rounded text-sm font-medium ${currentPermission ? 'bg-green-200 ring-2 ring-blue-500' : 'bg-green-100'} text-green-800 hover:bg-green-200" data-perm="${permId}" data-state="on">
+                                                ✓ ON
+                                            </button>
+                                            <button type="button" onclick="setEditPermission('${permId}', false)" class="edit-permission-selector px-3 py-1 rounded text-sm font-medium ${!currentPermission ? 'bg-red-200 ring-2 ring-blue-500' : 'bg-red-100'} text-red-800 hover:bg-red-200" data-perm="${permId}" data-state="off">
+                                                ✗ OFF
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Set permission for editing role
+        function setEditPermission(permissionId, isOn) {
+            // Remove active class from all buttons for this permission in edit modal
+            document.querySelectorAll(`#editPermissionSettings [data-perm="${permissionId}"]`).forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-blue-500', 'bg-green-200', 'bg-red-200');
+                if (btn.dataset.state === 'on') {
+                    btn.classList.add('bg-green-100');
+                } else {
+                    btn.classList.add('bg-red-100');
+                }
+            });
+            
+            // Add active class to selected button
+            const selectedBtn = document.querySelector(`#editPermissionSettings [data-perm="${permissionId}"][data-state="${isOn ? 'on' : 'off'}"]`);
+            if (selectedBtn) {
+                selectedBtn.classList.add('ring-2', 'ring-blue-500');
+                
+                if (isOn) {
+                    selectedBtn.classList.remove('bg-green-100');
+                    selectedBtn.classList.add('bg-green-200');
+                } else {
+                    selectedBtn.classList.remove('bg-red-100');
+                    selectedBtn.classList.add('bg-red-200');
+                }
+            }
+        }
+
+        // Save role changes
+        function saveRoleChanges(event) {
+            event.preventDefault();
+            
+            if (!currentEditingRole) return;
+            
+            // CRITICAL SECURITY: Admin role permissions are PERMANENTLY PROTECTED
+            if (currentEditingRole === 'Admin') {
+                showMessage('error', '🔒 Permanent Security Protection!', 'Admin role permissions are permanently locked and cannot be modified by ANYONE.\n\nThis includes Admin users themselves for maximum security.\n\nAdmin permissions are hardcoded and immutable.');
+                return;
+            }
+            
+            // Store original role name for success message
+            const originalRoleName = currentEditingRole;
+            let newRoleName = originalRoleName;
+            
+            // Handle role name changes for custom roles
+            if (roleMetadata[currentEditingRole] && roleMetadata[currentEditingRole].isCustom) {
+                newRoleName = document.getElementById('editRoleNameInput').value.trim();
+                
+                if (!newRoleName) {
+                    showMessage('error', '❌ Validation Error!', 'Please enter a role name.');
+                    return;
+                }
+                
+                // Check if new name conflicts with existing roles (but allow same name)
+                if (newRoleName !== originalRoleName && accessMatrix[newRoleName]) {
+                    showMessage('error', '❌ Duplicate Role Name!', 'A role with this name already exists. Please choose a different name.');
+                    return;
+                }
+                
+                // Update description for custom roles
+                const newDescription = document.getElementById('editRoleDescription').value.trim();
+                
+                // If name changed, we need to update the data structures
+                if (newRoleName !== originalRoleName) {
+                    // Copy role data to new name
+                    accessMatrix[newRoleName] = accessMatrix[originalRoleName];
+                    roleMetadata[newRoleName] = { ...roleMetadata[originalRoleName] };
+                    
+                    // Delete old role data
+                    delete accessMatrix[originalRoleName];
+                    delete roleMetadata[originalRoleName];
+                    
+                    // Update current editing role reference
+                    currentEditingRole = newRoleName;
+                    
+                    // If we're currently viewing the renamed role, update current role
+                    if (currentRole === originalRoleName) {
+                        currentRole = newRoleName;
+                        document.getElementById('currentRole').textContent = newRoleName;
+                    }
+                }
+                
+                // Update description
+                roleMetadata[newRoleName].description = newDescription || 'Custom role';
+            }
+            
+            // Collect new permissions - look for buttons with ring-2 class (selected state)
+            const newPermissions = {};
+            const activeButtons = document.querySelectorAll('#editPermissionSettings .edit-permission-selector.ring-2');
+            
+            // Initialize with current permissions as base
+            Object.assign(newPermissions, accessMatrix[newRoleName]);
+            
+            // Update with selected permissions from the modal
+            activeButtons.forEach(btn => {
+                const permId = btn.dataset.perm;
+                const isOn = btn.dataset.state === 'on';
+                newPermissions[permId] = isOn;
+            });
+            
+            // Update access matrix
+            accessMatrix[newRoleName] = newPermissions;
+            
+            // Update UI components
+            populateRoleSelector();
+            
+            // Update UI if we're currently viewing this role
+            if (currentRole === newRoleName) {
+                updatePermissions();
+            }
+            
+            closeEditRoleModal();
+            
+            // Count permissions for success message
+            const onPermissions = Object.values(newPermissions).filter(p => p === true).length;
+            const totalPermissions = Object.keys(newPermissions).length;
+            
+            // Show detailed success message
+            if (newRoleName !== originalRoleName) {
+                showMessage('success', '🎉 Role Updated Successfully!', `✅ UPDATE DETAILS:\n📝 Role Renamed: "${originalRoleName}" → "${newRoleName}"\n📋 Description: "${roleMetadata[newRoleName].description}"\n🎯 Active Permissions: ${onPermissions}/${totalPermissions}\n📅 Updated: ${new Date().toLocaleString()}\n\n🔄 CHANGES APPLIED:\n• Role name successfully changed\n• All permission settings saved\n• System data updated automatically\n• Changes active immediately\n\n💡 Role update completed successfully! All users with this role will see the changes.`);
+            } else {
+                showMessage('success', '🎉 Role Saved Successfully!', `✅ SAVE DETAILS:\n📝 Role Name: "${newRoleName}"\n📋 Description: "${roleMetadata[newRoleName].description}"\n🎯 Active Permissions: ${onPermissions}/${totalPermissions}\n📅 Saved: ${new Date().toLocaleString()}\n\n🔄 CHANGES APPLIED:\n• All permission settings saved\n• System data updated automatically\n• Changes active immediately\n• Role configuration complete\n\n💡 Role save completed successfully! All users with this role will see the changes.`);
+            }
+        }
+
+        // Reset role to default permissions
+        function resetRoleToDefault() {
+            if (!currentEditingRole || roleMetadata[currentEditingRole].isCustom) return;
+            
+            // CRITICAL SECURITY: Admin role permissions are PERMANENTLY PROTECTED
+            if (currentEditingRole === 'Admin') {
+                showMessage('error', '🔒 Permanent Security Protection!', 'Admin role permissions are permanently locked and cannot be reset by ANYONE.\n\nThis includes Admin users themselves for maximum security.\n\nAdmin permissions are hardcoded and immutable.');
+                return;
+            }
+            
+            const warningMessage = `🔄 Reset Role to Default\n\nAre you sure you want to reset "${currentEditingRole}" to default permissions?\n\n⚠️ This will overwrite all current permission settings for this role.`;
+            
+            if (confirm(warningMessage)) {
+                // Store role name for success message
+                const roleName = currentEditingRole;
+                
+                // Restore default permissions
+                accessMatrix[currentEditingRole] = JSON.parse(JSON.stringify(defaultPermissions[currentEditingRole]));
+                
+                // Refresh the edit modal
+                populateEditPermissionSettings(currentEditingRole);
+                
+                // Update UI if we're currently viewing this role
+                if (currentRole === currentEditingRole) {
+                    updatePermissions();
+                }
+                
+                // Count permissions for success message
+                const resetPermissions = accessMatrix[currentEditingRole];
+                const onPermissions = Object.values(resetPermissions).filter(p => p === true).length;
+                const totalPermissions = Object.keys(resetPermissions).length;
+                
+                // Show detailed success message
+                showMessage('success', '🎉 Role Reset Successfully!', `✅ RESET DETAILS:\n📝 Role Name: "${roleName}"\n🔄 Reset to: Factory Default Settings\n🎯 Default Permissions: ${onPermissions}/${totalPermissions}\n📅 Reset: ${new Date().toLocaleString()}\n\n🔄 CHANGES APPLIED:\n• All custom changes removed\n• Original system permissions restored\n• Role returned to default state\n• Changes active immediately\n\n💡 Role reset completed successfully! The role now has its original system permissions.`);
+            }
+        }
+
+        // Update all permissions based on current role
+        function updatePermissions() {
+            const rolePermissions = accessMatrix[currentRole];
+            let onCount = 0;
+            let offCount = 0;
+
+            // Update each permission
+            Object.keys(rolePermissions).forEach(permissionId => {
+                const permission = rolePermissions[permissionId];
+                const element = document.getElementById(permissionId);
+                
+                if (element) {
+                    updatePermissionDisplay(element, permission);
+                    
+                    // Count permissions
+                    if (permission) onCount++;
+                    else offCount++;
+                }
+            });
+
+            // Update menu access indicators
+            updateMenuAccessIndicators();
+            
+            // Update summary
+            updatePermissionSummary(onCount, offCount);
+        }
+
+        // Update individual permission display
+        function updatePermissionDisplay(element, permission) {
+            if (permission) {
+                element.innerHTML = `<span class="text-sm text-green-600">✓ ON</span>`;
+                // Update parent container background
+                const container = element.closest('.menu-item');
+                if (container) {
+                    container.className = 'menu-item p-3 rounded-lg bg-green-50';
+                }
+            } else {
+                element.innerHTML = `<span class="text-sm text-red-600">✗ OFF</span>`;
+                // Update parent container background
+                const container = element.closest('.menu-item');
+                if (container) {
+                    container.className = 'menu-item p-3 rounded-lg bg-red-50';
+                }
+            }
+        }
+
+        // Update menu access indicators
+        function updateMenuAccessIndicators() {
+            const menus = {
+                'dashboard': ['dashboard-view-all', 'dashboard-view-team', 'dashboard-view-self'],
+                'clients': ['clients-view-all', 'clients-view-team', 'clients-view-self', 'clients-add', 'clients-edit', 'clients-delete', 'clients-export'],
+                'leads': ['leads-view-all', 'leads-view-team', 'leads-view-self', 'leads-add', 'leads-edit', 'leads-delete', 'leads-convert', 'leads-export'],
+                'tasks': ['tasks-view-all', 'tasks-view-team', 'tasks-view-self', 'tasks-add', 'tasks-edit', 'tasks-delete', 'tasks-export'],
+                'calendar': ['calendar-view-all', 'calendar-view-team', 'calendar-view-self', 'calendar-add', 'calendar-edit', 'calendar-delete', 'calendar-export'],
+                'team': ['team-view-all', 'team-view-self', 'team-add', 'team-edit', 'team-delete', 'team-export'],
+                'attendance': ['attendance-view-all', 'attendance-view-team', 'attendance-view-self', 'attendance-add', 'attendance-edit', 'attendance-delete', 'attendance-export'],
+                'leaves': ['leaves-view-all', 'leaves-view-team', 'leaves-view-self', 'leaves-add', 'leaves-edit', 'leaves-delete', 'leaves-export'],
+                'payroll': ['payroll-view-all', 'payroll-view-team', 'payroll-view-self', 'payroll-download', 'payroll-export'],
+                'reports': ['reports-view-all', 'reports-view-team', 'reports-view-self', 'reports-add', 'reports-edit', 'reports-delete', 'reports-export'],
+                'notifications': ['notifications-view-all', 'notifications-view-team', 'notifications-view-self', 'notifications-add', 'notifications-edit', 'notifications-delete', 'notifications-export']
+            };
+
+            Object.keys(menus).forEach(menuName => {
+                const permissions = menus[menuName];
+                const rolePermissions = accessMatrix[currentRole];
+                
+                let onCount = 0;
+                let offCount = 0;
+
+                permissions.forEach(perm => {
+                    const permission = rolePermissions[perm];
+                    if (permission) onCount++;
+                    else offCount++;
+                });
+
+                const indicator = document.getElementById(`${menuName}-access`);
+                if (indicator) {
+                    const span = indicator.querySelector('span');
+                    
+                    if (offCount === permissions.length) {
+                        span.className = 'px-3 py-1 rounded-full text-sm font-medium access-denied text-white';
+                        span.textContent = 'All OFF';
+                    } else if (onCount === permissions.length) {
+                        span.className = 'px-3 py-1 rounded-full text-sm font-medium access-granted text-white';
+                        span.textContent = 'Full Access';
+                    } else {
+                        span.className = 'px-3 py-1 rounded-full text-sm font-medium access-partial text-white';
+                        span.textContent = 'Partial Access';
+                    }
+                }
+            });
+        }
+
+        // Update permission summary
+        function updatePermissionSummary(onCount, offCount) {
+            document.getElementById('onCount').textContent = onCount;
+            document.getElementById('offCount').textContent = offCount;
+            
+            document.getElementById('onText').textContent = `${onCount} Permissions ON`;
+            document.getElementById('offText').textContent = `${offCount} Permissions OFF`;
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeSystem);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'976dba2cf6371397',t:'MTc1NjQ4ODExMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

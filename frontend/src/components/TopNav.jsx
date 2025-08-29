@@ -9,8 +9,11 @@ import {
   FaLeaf,
   FaMoneyBill,
   FaBell,
+  FaAddressBook,
 } from "react-icons/fa";
 import { useState, useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchNotifications } from "../store/notificationsSlice";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/client";
 
@@ -24,6 +27,7 @@ const TABS = {
   reports: { key: "reports", label: "Reports", icon: <FaClipboardList /> },
   attendance: { key: "attendance", label: "Attendance", icon: <FaClock /> },
   leaves: { key: "leaves", label: "Leaves", icon: <FaLeaf /> },
+  leads: { key: "leads", label: "Leads", icon: <FaAddressBook /> },
   payroll: { key: "payroll", label: "Payroll", icon: <FaMoneyBill /> },
   notifications: {
     key: "notifications",
@@ -36,6 +40,7 @@ export const ROLE_NAV_ITEMS = {
   admin: [
     "dashboard",
     "clients",
+    "leads",
     "tasks",
     "team",
     "calendar",
@@ -43,16 +48,15 @@ export const ROLE_NAV_ITEMS = {
     "leaves",
     "payroll",
     "reports",
-    "notifications",
   ],
   manager: [
     "dashboard",
+    "leads",
     "tasks",
     "calendar",
     "reports",
     "attendance",
     "leaves",
-    "notifications",
   ],
   employee: [
     "dashboard",
@@ -61,7 +65,6 @@ export const ROLE_NAV_ITEMS = {
     "reports",
     "attendance",
     "leaves",
-    "notifications",
   ],
   client: ["dashboard", "calendar", "reports"],
 };
@@ -71,6 +74,9 @@ export default function TopNavbar({ onTabChange }) {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const { user, logout } = useAuth();
+  const dispatch = useDispatch();
+  const { items: notifications } = useSelector((s) => s.notifications);
+  const unreadCount = notifications.filter((n) => !n.read).length;
   const [now, setNow] = useState(new Date());
   // Profile modal removed; now routed to Profile page
 
@@ -91,6 +97,12 @@ export default function TopNavbar({ onTabChange }) {
     const t = setInterval(() => setNow(new Date()), 1000 * 30);
     return () => clearInterval(t);
   }, []);
+
+  useEffect(() => {
+    dispatch(fetchNotifications());
+    const id = setInterval(() => dispatch(fetchNotifications()), 30000);
+    return () => clearInterval(id);
+  }, [dispatch]);
 
   const handleTabClick = (tabName) => {
     setActiveTab(tabName);
@@ -131,7 +143,18 @@ export default function TopNavbar({ onTabChange }) {
           </div>
 
           {/* User Avatar */}
-          <div className="relative" ref={dropdownRef}>
+          <button
+              onClick={() => handleTabClick("notifications")}
+              className="relative p-2 rounded-md hover:bg-gray-100 mr-4"
+            >
+              <FaBell className="text-xl text-gray-600" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+            <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
               className={`flex items-center space-x-2 px-3 py-2 rounded-md border transition-colors ${

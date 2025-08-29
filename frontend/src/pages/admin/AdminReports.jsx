@@ -14,15 +14,27 @@ export default function AdminReports() {
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ title: "", content: "", client: "" });
   const [clients, setClients] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [filters, setFilters] = useState({ client: "", employee: "", from: "", to: "" });
 
   useEffect(() => {
-    dispatch(fetchReports());
-  }, [dispatch]);
+    dispatch(fetchReports(filters));
+  }, [dispatch, filters]);
   useEffect(() => {
     (async () => {
       try {
         const { data } = await api.get("/clients");
         setClients(data || []);
+      } catch {}
+    })();
+  }, []);
+
+  // Fetch employees for filter options
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get("/users");
+        setEmployees(data || []);
       } catch {}
     })();
   }, []);
@@ -41,6 +53,40 @@ export default function AdminReports() {
         >
           <span>+</span>
           <span>Submit Report</span>
+        </button>
+      </div>
+
+      {/* Filters Section */}
+      <div className="flex flex-wrap items-end gap-4 mb-4">
+        <Select
+          label="Client"
+          value={filters.client}
+          onChange={(v) => setFilters((s) => ({ ...s, client: v }))}
+          options={[{ label: "All", value: "" }, ...clients.map((c) => ({ label: c.companyName, value: c._id }))]}
+        />
+        <Select
+          label="Employee"
+          value={filters.employee}
+          onChange={(v) => setFilters((s) => ({ ...s, employee: v }))}
+          options={[{ label: "All", value: "" }, ...employees.map((e) => ({ label: e.name, value: e._id }))]}
+        />
+        <Text
+          type="date"
+          label="From"
+          value={filters.from}
+          onChange={(v) => setFilters((s) => ({ ...s, from: v }))}
+        />
+        <Text
+          type="date"
+          label="To"
+          value={filters.to}
+          onChange={(v) => setFilters((s) => ({ ...s, to: v }))}
+        />
+        <button
+          onClick={() => dispatch(fetchReports(filters))}
+          className="px-4 py-2 bg-indigo-600 text-white rounded"
+        >
+          Apply
         </button>
       </div>
 

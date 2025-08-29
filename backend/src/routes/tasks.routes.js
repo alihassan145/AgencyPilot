@@ -16,7 +16,7 @@ router.get("/", listTasks);
 router.get("/:id", getTask);
 router.post(
   "/",
-  allowRoles("admin", "manager"),
+  allowRoles("manager+"),
   [
     body("title").isString().notEmpty(),
     body("assignedTo").isString().notEmpty(),
@@ -27,10 +27,16 @@ router.post(
   validate,
   createTask
 );
-router.patch("/:id", [param("id").isString().notEmpty()], validate, updateTask); // employees can update status; managers/admins can update all
+router.patch(
+  "/:id",
+  allowRoles("employee+"),
+  [param("id").isString().notEmpty()],
+  validate,
+  updateTask
+); // employees can update status; managers/admins can update all
 router.delete(
   "/:id",
-  allowRoles("admin", "manager"),
+  allowRoles("manager+"),
   [param("id").isString().notEmpty()],
   validate,
   deleteTask

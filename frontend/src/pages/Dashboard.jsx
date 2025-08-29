@@ -23,6 +23,7 @@ import AdminReports from "./admin/AdminReports";
 import AdminAttendance from "./admin/AdminAttendance";
 import AdminLeaves from "./admin/AdminLeaves";
 import AdminPayroll from "./admin/AdminPayroll";
+import AdminLeads from "./admin/AdminLeads";
 import AdminNotifications from "./admin/AdminNotifications";
 import Profile from "./Profile";
 
@@ -52,6 +53,8 @@ export default function Dashboard({ userRole = "admin" }) {
           return <AdminLeaves />;
         case "payroll":
           return <AdminPayroll />;
+        case "leads":
+          return <AdminLeads />;
         case "reports":
           return <AdminReports />;
         case "notifications":
@@ -77,6 +80,8 @@ export default function Dashboard({ userRole = "admin" }) {
             return <ManagerDashboard />;
           case "tasks":
             return <ManagerTasks />;
+          case "leads":
+            return <AdminLeads />;
           case "calendar":
             return <ManagerCalendar />;
           case "reports":
@@ -96,7 +101,9 @@ export default function Dashboard({ userRole = "admin" }) {
           case "dashboard":
             return <EmployeeDashboard />;
           case "tasks":
-            return <EmployeeTasks />;
+              return <EmployeeTasks />;
+            case "leads":
+              return <AdminLeads />;
           case "calendar":
             return <EmployeeCalendar />;
           case "reports":

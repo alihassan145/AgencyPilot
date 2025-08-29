@@ -10,10 +10,10 @@ const {
 
 router.use(authenticate);
 
-router.get("/", allowRoles("admin", "manager", "employee"), listLeaves);
+router.get("/", allowRoles("employee+"), listLeaves);
 router.post(
-  "/",
-  allowRoles("admin", "manager", "employee"),
+   "/",
+   allowRoles("employee+"),
   [
     body("from").isISO8601(),
     body("to").isISO8601(),
@@ -23,8 +23,8 @@ router.post(
   applyLeave
 );
 router.post(
-  "/:id/decide",
-  allowRoles("admin", "manager"),
+   "/:id/decide",
+   allowRoles("manager+"),
   [
     param("id").isString().notEmpty(),
     body("action").isIn(["approve", "reject"]),
