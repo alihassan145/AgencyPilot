@@ -17,11 +17,20 @@ router.post(
   [
     body("graceMinutes").optional().isInt({ min: 0 }),
     body("latePenalty").optional().isNumeric(),
+    body("latePenaltyUnit")
+      .optional()
+      .isIn(["per_minute", "per_hour", "per_day"]),
     body("overtimeEnabled").optional().isBoolean(),
     body("overtimeBonusPerHour").optional().isNumeric(),
+    body("overtimeAmount").optional().isNumeric(),
+    body("overtimeUnit")
+      .optional()
+      .isIn(["per_minute", "per_hour", "per_day"]),
     body("officialStart").optional().isString(),
     body("officialEnd").optional().isString(),
     body("defaultBaseSalary").optional().isNumeric(),
+    body("professionalTaxThreshold").optional().isNumeric(),
+    body("professionalTaxAmount").optional().isNumeric(),
   ],
   validate,
   setConfig
@@ -34,6 +43,8 @@ router.get(
       .optional()
       .matches(/^\d{4}-\d{2}$/),
     query("baseSalary").optional().isNumeric(),
+    query("unapprovedAbsentDays").optional().isInt({ min: 0 }),
+    query("workingDays").optional().isInt({ min: 1 }),
   ],
   validate,
   myEarnings

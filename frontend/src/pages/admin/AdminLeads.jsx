@@ -77,7 +77,7 @@ export default function AdminLeads() {
   );
 
   return (
-    <div className="p-6 space-y-4 mx-24">
+    <div className="p-6 space-y-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Leads</h2>
         <button
@@ -149,7 +149,7 @@ export default function AdminLeads() {
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50">
           <form
             onSubmit={handleSubmit}
-            className="bg-white w-full max-w-lg p-6 rounded-xl shadow space-y-4"
+            className="bg-white w-full max-w-lg p-6 rounded-xl shadow space-y-4 max-h-[90vh] overflow-y-auto"
           >
             <h3 className="text-lg font-semibold">
               {editing ? "Edit Lead" : "New Lead"}
@@ -168,20 +168,20 @@ export default function AdminLeads() {
                 className="w-full border rounded px-3 py-2"
               />
             </div>
-            <div className="flex justify-end space-x-2 pt-2">
+            <div className="flex flex-wrap justify-end space-x-2 space-y-2 sm:space-y-0 pt-2">
               <button
                 type="button"
                 onClick={() => {
                   setShowModal(false);
                   resetForm();
                 }}
-                className="px-4 py-2 rounded-md border"
+                className="px-4 py-2 rounded-md border w-full sm:w-auto"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md w-full sm:w-auto"
               >
                 {editing ? "Update" : "Create"}
               </button>

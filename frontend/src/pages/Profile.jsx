@@ -60,7 +60,7 @@ export default function Profile() {
   }, [user]);
 
   return (
-    <div className="py-6 space-y-8 bg-gray-50 min-h-screen mx-24">
+    <div className="py-6 space-y-8 bg-gray-50 min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header Card */}
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-6 shadow text-white">
         <div className="flex items-center gap-4">

@@ -19,10 +19,12 @@ const checkIn = asyncHandler(async (req, res) => {
   const { start } = getOfficialTimes(config, now);
   const graceMs = (config.graceMinutes || 15) * 60 * 1000;
   const wasLate = now.getTime() > start.getTime() + graceMs;
+  const lateMs = Math.max(0, now.getTime() - (start.getTime() + graceMs));
+  const lateMinutes = Math.floor(lateMs / (1000 * 60));
 
   const attendance = await Attendance.findOneAndUpdate(
     { user: req.user.id, date: dateKey },
-    { $setOnInsert: { checkIn: now, wasLate } },
+    { $setOnInsert: { checkIn: now, wasLate, lateMinutes } },
     { new: true, upsert: true }
   );
   res.json(attendance);

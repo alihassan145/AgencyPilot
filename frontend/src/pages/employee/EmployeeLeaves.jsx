@@ -13,7 +13,7 @@ export default function EmployeeLeaves() {
   }, [dispatch]);
 
   return (
-    <div className="p-6 space-y-4 mx-24">
+    <div className="p-6 space-y-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">My Leaves</h2>
         <button
@@ -63,8 +63,8 @@ export default function EmployeeLeaves() {
       </div>
 
       {show && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg p-6 rounded-xl shadow space-y-4">
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50">
+          <div className="bg-white w-full max-w-lg p-6 rounded-xl shadow space-y-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold">Apply for Leave</h3>
             <form
               onSubmit={async (e) => {
@@ -72,7 +72,7 @@ export default function EmployeeLeaves() {
                 await dispatch(createLeave(form));
                 setShow(false);
               }}
-              className="grid grid-cols-2 gap-4"
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
             >
               <Text
                 label="From"
@@ -96,17 +96,17 @@ export default function EmployeeLeaves() {
                   required
                 />
               </div>
-              <div className="col-span-2 flex justify-end gap-2 pt-2">
+              <div className="col-span-2 flex flex-wrap justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setShow(false)}
-                  className="px-4 py-2 rounded border"
+                  className="px-4 py-2 rounded border w-full sm:w-auto"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded bg-indigo-600 text-white"
+                  className="px-4 py-2 rounded bg-indigo-600 text-white w-full sm:w-auto"
                 >
                   Submit
                 </button>

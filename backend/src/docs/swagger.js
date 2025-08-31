@@ -9,7 +9,7 @@ const options = {
     },
     servers: [
       {
-        url: `http://localhost:${process.env.PORT || 5000}`,
+        url: `http://localhost:${process.env.PORT || 5001}`,
         description: "Local",
       },
     ],
@@ -268,6 +268,32 @@ const options = {
         get: {
           tags: ["Payroll"],
           summary: "My earnings summary",
+          parameters: [
+            {
+              in: "query",
+              name: "month",
+              schema: { type: "string", example: "2025-08", pattern: "^\\d{4}-\\d{2}$" },
+              description: "Salary month in YYYY-MM format",
+            },
+            {
+              in: "query",
+              name: "baseSalary",
+              schema: { type: "number", example: 50000 },
+              description: "Monthly base salary to use for calculation (overrides default config)",
+            },
+            {
+              in: "query",
+              name: "unapprovedAbsentDays",
+              schema: { type: "integer", minimum: 0, example: 1 },
+              description: "Number of unapproved absent days for the month",
+            },
+            {
+              in: "query",
+              name: "workingDays",
+              schema: { type: "integer", minimum: 1, example: 26 },
+              description: "Total working days in the selected month (defaults to 26 if omitted)",
+            },
+          ],
           responses: { 200: { description: "OK" } },
         },
       },

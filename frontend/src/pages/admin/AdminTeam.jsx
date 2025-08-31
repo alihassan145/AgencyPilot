@@ -216,7 +216,7 @@ export default function AdminTeam() {
   };
 
   return (
-    <div className="p-8 space-y-6 mx-24">
+    <div className="p-8 space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header Section */}
       <div className="flex items-center justify-between">
         <div>
@@ -383,8 +383,8 @@ export default function AdminTeam() {
 
       {/* Modal for Add/Edit Team Member */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-auto max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">
                 {editingMember ? "Edit Team Member" : "Add New Team Member"}
@@ -514,20 +514,20 @@ export default function AdminTeam() {
                 </select>
               </div>
 
-              <div className="flex space-x-3 pt-4">
+              <div className="flex flex-wrap space-x-0 sm:space-x-3 space-y-2 sm:space-y-0 pt-4">
                 <button
                   type="button"
                   onClick={() => {
                     setShowModal(false);
                     setEditingMember(null);
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium transition-colors"
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium transition-colors w-full sm:w-auto"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors"
+                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors w-full sm:w-auto"
                 >
                   {editingMember ? "Update" : "Create"}
                 </button>
@@ -562,24 +562,24 @@ export default function AdminTeam() {
 
       {/* Confirmation Dialog */}
       {confirmDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-auto max-h-[90vh] overflow-y-auto">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 {confirmDialog.title}
               </h3>
               <p className="text-gray-600">{confirmDialog.message}</p>
             </div>
-            <div className="flex space-x-3">
+            <div className="flex flex-wrap space-x-0 sm:space-x-3 space-y-2 sm:space-y-0">
               <button
                 onClick={confirmDialog.onCancel}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium transition-colors"
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium transition-colors w-full sm:w-auto"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDialog.onConfirm}
-                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium transition-colors"
+                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium transition-colors w-full sm:w-auto"
               >
                 Confirm
               </button>

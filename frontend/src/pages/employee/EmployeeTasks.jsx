@@ -14,7 +14,7 @@ export default function EmployeeTasks() {
     dispatch(updateTask({ id, updates: { status: "done" } }));
 
   return (
-    <div className="p-6 space-y-4 mx-24">
+    <div className="p-6 space-y-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <h2 className="text-xl font-semibold">My Tasks</h2>
       <div className="bg-white rounded-lg shadow divide-y">
         {loading && <div className="p-4 text-gray-500">Loading...</div>}

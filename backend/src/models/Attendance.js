@@ -10,6 +10,7 @@ const attendanceSchema = new mongoose.Schema(
     wasLate: { type: Boolean, default: false },
     leftEarly: { type: Boolean, default: false },
     overtimeHours: { type: Number, default: 0 },
+    lateMinutes: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

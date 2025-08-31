@@ -189,7 +189,7 @@ export default function AdminTasks() {
   };
 
   return (
-    <div className="p-8 space-y-6 mx-24">
+    <div className="p-8 space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header Section */}
       <div className="flex items-center justify-between">
         <div>
@@ -361,8 +361,8 @@ export default function AdminTasks() {
         </div>
       </div>
       {showModal && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg p-6 rounded-xl shadow space-y-4">
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50">
+          <div className="bg-white w-full max-w-lg p-6 rounded-xl shadow space-y-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold">{editingTask ? "Edit Task" : "Create Task"}</h3>
             <form onSubmit={handleSubmit} className="space-y-3">
               <Text
@@ -376,7 +376,7 @@ export default function AdminTasks() {
                 value={form.description}
                 onChange={(v) => setForm((s) => ({ ...s, description: v }))}
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Select
                   label="Assigned To"
                   value={form.assignedTo}
@@ -419,17 +419,17 @@ export default function AdminTasks() {
                   ]}
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex flex-wrap justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded border"
+                  className="px-4 py-2 rounded border w-full sm:w-auto"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded bg-indigo-600 text-white"
+                  className="px-4 py-2 rounded bg-indigo-600 text-white w-full sm:w-auto"
                 >
                   {editingTask ? "Update" : "Create"}
                 </button>

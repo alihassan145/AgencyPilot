@@ -20,7 +20,7 @@ export default function ManagerDashboard() {
   ];
 
   return (
-    <div className="py-6 space-y-8 bg-gray-50 min-h-screen mx-24">
+    <div className="py-6 space-y-8 bg-gray-50 min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div>
         <h1 className="text-3xl font-bold text-gray-800">
           Welcome back, Manager!

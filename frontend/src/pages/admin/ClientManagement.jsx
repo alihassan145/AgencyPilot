@@ -184,7 +184,7 @@ export default function ClientManagement() {
   };
 
   return (
-    <div className="p-8 space-y-6 mx-24">
+    <div className="p-8 space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
@@ -276,7 +276,7 @@ export default function ClientManagement() {
       </div>
 
       {/* Table Card */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="w-full text-left border-separate border-spacing-y-2">
           <thead className="bg-gray-50">
             <tr className="text-gray-500 text-sm">
@@ -359,12 +359,12 @@ export default function ClientManagement() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg p-6 rounded-xl shadow space-y-4">
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50">
+          <div className="bg-white w-full max-w-lg p-6 rounded-xl shadow space-y-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold">
               {editing ? "Edit Client" : "Add New Client"}
             </h3>
-            <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Text
                 label="Company Name"
                 value={form.companyName}
@@ -412,17 +412,17 @@ export default function ClientManagement() {
                 value={form.expiryDate}
                 onChange={(v) => setForm((s) => ({ ...s, expiryDate: v }))}
               />
-              <div className="col-span-2 flex justify-end gap-2 mt-2">
+              <div className="col-span-2 flex flex-wrap justify-end gap-2 mt-2">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded border"
+                  className="px-4 py-2 rounded border w-full sm:w-auto"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded bg-indigo-600 text-white"
+                  className="px-4 py-2 rounded bg-indigo-600 text-white w-full sm:w-auto"
                 >
                   Save
                 </button>

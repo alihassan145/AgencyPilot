@@ -126,7 +126,7 @@ export default function TopNavbar({ onTabChange }) {
     <>
       <div className="bg-white shadow-sm border-b">
         {/* Top Row: Logo + Title and User Avatar */}
-        <div className="flex justify-between items-center px-6 py-4 mx-24">
+        <div className="flex justify-between items-center py-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Logo + Title */}
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-xl font-bold">
@@ -202,17 +202,19 @@ export default function TopNavbar({ onTabChange }) {
         </div>
 
         {/* Bottom Row: Navigation Tabs */}
-        <div className="px-6 py-3 border-t border-gray-100 mx-20">
-          <div className="flex space-x-6 text-sm font-medium">
-            {(ROLE_NAV_ITEMS[user?.role] || ROLE_NAV_ITEMS.admin).map((key) => (
-              <NavTab
-                key={key}
-                active={activeTab === key}
-                icon={TABS[key].icon}
-                label={TABS[key].label}
-                onClick={() => handleTabClick(key)}
-              />
-            ))}
+        <div className="py-3 border-t border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-auto">
+            <div className="flex space-x-6 text-sm font-medium min-w-max">
+              {(ROLE_NAV_ITEMS[user?.role] || ROLE_NAV_ITEMS.admin).map((key) => (
+                <NavTab
+                  key={key}
+                  active={activeTab === key}
+                  icon={TABS[key].icon}
+                  label={TABS[key].label}
+                  onClick={() => handleTabClick(key)}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
