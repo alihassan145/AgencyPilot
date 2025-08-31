@@ -40,7 +40,7 @@ export default function EmployeeAttendance() {
   };
 
   return (
-    <div className="p-6 space-y-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="p-6 space-y-4 mx-24">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">My Attendance</h2>
         <div className="space-x-2">
@@ -112,7 +112,9 @@ export default function EmployeeAttendance() {
                       : a.totalHours}
                   </td>
                   <td className="px-4 py-3">{a.wasLate ? "Yes" : "No"}</td>
-                  <td className="px-4 py-3">{typeof a.lateMinutes === "number" ? a.lateMinutes : "-"}</td>
+                  <td className="px-4 py-3">
+                    {typeof a.lateMinutes === "number" ? a.lateMinutes : "-"}
+                  </td>
                   <td className="px-4 py-3">{a.leftEarly ? "Yes" : "No"}</td>
                 </tr>
               ))}

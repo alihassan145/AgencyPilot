@@ -9,7 +9,7 @@ export default function ManagerAttendance() {
     dispatch(fetchAttendance());
   }, [dispatch]);
   return (
-    <div className="p-6 space-y-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="p-6 space-y-4 mx-24">
       <h2 className="text-xl font-semibold">Team Attendance</h2>
       <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="w-full">
@@ -53,7 +53,9 @@ export default function ManagerAttendance() {
                       : a.totalHours}
                   </td>
                   <td className="px-4 py-3">{a.wasLate ? "Yes" : "No"}</td>
-                  <td className="px-4 py-3">{typeof a.lateMinutes === "number" ? a.lateMinutes : "-"}</td>
+                  <td className="px-4 py-3">
+                    {typeof a.lateMinutes === "number" ? a.lateMinutes : "-"}
+                  </td>
                 </tr>
               ))}
           </tbody>

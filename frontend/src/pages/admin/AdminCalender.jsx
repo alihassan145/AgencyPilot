@@ -319,7 +319,7 @@ export default function AdminCalendar() {
                   ×
                 </button>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -327,7 +327,7 @@ export default function AdminCalendar() {
                   </label>
                   <p className="text-gray-900">{selectedTask.title}</p>
                 </div>
-                
+
                 {selectedTask.description && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -336,7 +336,7 @@ export default function AdminCalendar() {
                     <p className="text-gray-900">{selectedTask.description}</p>
                   </div>
                 )}
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -353,32 +353,35 @@ export default function AdminCalendar() {
                       </span>
                     </div>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Status
                     </label>
                     <span className="capitalize text-gray-900">
-                      {selectedTask.status?.replace('_', ' ')}
+                      {selectedTask.status?.replace("_", " ")}
                     </span>
                   </div>
                 </div>
-                
+
                 {selectedTask.dueDate && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Due Date
                     </label>
                     <p className="text-gray-900">
-                      {new Date(selectedTask.dueDate).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
+                      {new Date(selectedTask.dueDate).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }
+                      )}
                     </p>
                   </div>
                 )}
-                
+
                 {selectedTask.assignedTo && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -389,7 +392,7 @@ export default function AdminCalendar() {
                     </p>
                   </div>
                 )}
-                
+
                 {selectedTask.client && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -400,25 +403,28 @@ export default function AdminCalendar() {
                     </p>
                   </div>
                 )}
-                
+
                 {selectedTask.completedAt && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Completed At
                     </label>
                     <p className="text-gray-900">
-                      {new Date(selectedTask.completedAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
+                      {new Date(selectedTask.completedAt).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )}
                     </p>
                   </div>
                 )}
               </div>
-              
+
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => {

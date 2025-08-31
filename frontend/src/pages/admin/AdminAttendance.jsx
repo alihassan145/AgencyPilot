@@ -29,7 +29,7 @@ export default function AdminAttendance() {
   }, [dispatch, employee, from, to]);
 
   return (
-    <div className="p-8 space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="p-8 space-y-6 mx-24">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
@@ -130,7 +130,9 @@ export default function AdminAttendance() {
                       : a.totalHours}
                   </td>
                   <td className="px-4 py-3">{a.wasLate ? "Yes" : "No"}</td>
-                  <td className="px-4 py-3">{typeof a.lateMinutes === "number" ? a.lateMinutes : "-"}</td>
+                  <td className="px-4 py-3">
+                    {typeof a.lateMinutes === "number" ? a.lateMinutes : "-"}
+                  </td>
                   <td className="px-4 py-3">{a.leftEarly ? "Yes" : "No"}</td>
                 </tr>
               ))}

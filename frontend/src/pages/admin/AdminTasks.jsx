@@ -54,9 +54,10 @@ export default function AdminTasks() {
 
     // Apply search filter
     if (searchTerm) {
-      filteredItems = filteredItems.filter((task) =>
-        task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        task.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      filteredItems = filteredItems.filter(
+        (task) =>
+          task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          task.description?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -64,9 +65,13 @@ export default function AdminTasks() {
     if (selectedAssignee !== "all") {
       filteredItems = filteredItems.filter((task) => {
         // Match by assignedTo field or user name
-        const assignedUser = users.find(u => u._id === task.assignedTo);
-        return assignedUser?.name?.toLowerCase().includes(selectedAssignee.toLowerCase()) ||
-               task.assignedTo === selectedAssignee;
+        const assignedUser = users.find((u) => u._id === task.assignedTo);
+        return (
+          assignedUser?.name
+            ?.toLowerCase()
+            .includes(selectedAssignee.toLowerCase()) ||
+          task.assignedTo === selectedAssignee
+        );
       });
     }
 
@@ -74,15 +79,21 @@ export default function AdminTasks() {
     if (selectedClient !== "all") {
       filteredItems = filteredItems.filter((task) => {
         // Match by client field or client name
-        const taskClient = clients.find(c => c._id === task.client);
-        return taskClient?.companyName?.toLowerCase().includes(selectedClient.toLowerCase()) ||
-               task.client === selectedClient;
+        const taskClient = clients.find((c) => c._id === task.client);
+        return (
+          taskClient?.companyName
+            ?.toLowerCase()
+            .includes(selectedClient.toLowerCase()) ||
+          task.client === selectedClient
+        );
       });
     }
 
     // Apply priority filter
     if (selectedPriority !== "all") {
-      filteredItems = filteredItems.filter((task) => task.priority === selectedPriority);
+      filteredItems = filteredItems.filter(
+        (task) => task.priority === selectedPriority
+      );
     }
 
     // Group filtered items by status
@@ -91,7 +102,15 @@ export default function AdminTasks() {
       byStatus[t.status]?.push(t);
     });
     return byStatus;
-  }, [items, searchTerm, selectedAssignee, selectedClient, selectedPriority, users, clients]);
+  }, [
+    items,
+    searchTerm,
+    selectedAssignee,
+    selectedClient,
+    selectedPriority,
+    users,
+    clients,
+  ]);
 
   const moveTask = (taskId, toStatus) => {
     dispatch(updateTask({ id: taskId, updates: { status: toStatus } }));
@@ -138,18 +157,24 @@ export default function AdminTasks() {
 
   // CSV Export utility function
   const exportToCSV = (data, filename) => {
-    const csvContent = data.map(row => 
-      Object.values(row).map(value => 
-        typeof value === 'string' && value.includes(',') ? `"${value}"` : value
-      ).join(',')
-    ).join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
+    const csvContent = data
+      .map((row) =>
+        Object.values(row)
+          .map((value) =>
+            typeof value === "string" && value.includes(",")
+              ? `"${value}"`
+              : value
+          )
+          .join(",")
+      )
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -158,33 +183,42 @@ export default function AdminTasks() {
   const handleExportCSV = () => {
     // Get all tasks from current filtered view
     const allTasks = [...tasks.todo, ...tasks.in_progress, ...tasks.done];
-    
+
     if (allTasks.length === 0) {
-      alert('No tasks to export');
+      alert("No tasks to export");
       return;
     }
 
     // Prepare CSV data with headers
     const csvData = [
-      ['Title', 'Description', 'Assigned To', 'Client', 'Priority', 'Status', 'Due Date', 'Created At'],
-      ...allTasks.map(task => {
-        const assignedUser = users.find(u => u._id === task.assignedTo);
-        const taskClient = clients.find(c => c._id === task.client);
-        
+      [
+        "Title",
+        "Description",
+        "Assigned To",
+        "Client",
+        "Priority",
+        "Status",
+        "Due Date",
+        "Created At",
+      ],
+      ...allTasks.map((task) => {
+        const assignedUser = users.find((u) => u._id === task.assignedTo);
+        const taskClient = clients.find((c) => c._id === task.client);
+
         return [
-          task.title || '',
-          task.description || '',
-          assignedUser?.name || task.assignedTo || '',
-          taskClient?.companyName || task.client || '',
-          task.priority || '',
-          task.status || '',
-          task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '',
-          task.createdAt ? new Date(task.createdAt).toLocaleDateString() : ''
+          task.title || "",
+          task.description || "",
+          assignedUser?.name || task.assignedTo || "",
+          taskClient?.companyName || task.client || "",
+          task.priority || "",
+          task.status || "",
+          task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "",
+          task.createdAt ? new Date(task.createdAt).toLocaleDateString() : "",
         ];
-      })
+      }),
     ];
 
-    const timestamp = new Date().toISOString().split('T')[0];
+    const timestamp = new Date().toISOString().split("T")[0];
     exportToCSV(csvData, `tasks-export-${timestamp}.csv`);
   };
 
@@ -197,7 +231,7 @@ export default function AdminTasks() {
           <p className="text-gray-600">Organize and track your projects.</p>
         </div>
         <div className="space-x-2">
-          <button 
+          <button
             onClick={handleExportCSV}
             className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium transition-colors flex items-center space-x-2"
           >
@@ -273,7 +307,7 @@ export default function AdminTasks() {
             </select>
           </div>
           <div>
-            <button 
+            <button
               onClick={clearFilters}
               className="w-full px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md font-medium transition-colors flex items-center justify-center space-x-2"
             >
@@ -363,7 +397,9 @@ export default function AdminTasks() {
       {showModal && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50">
           <div className="bg-white w-full max-w-lg p-6 rounded-xl shadow space-y-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold">{editingTask ? "Edit Task" : "Create Task"}</h3>
+            <h3 className="text-lg font-semibold">
+              {editingTask ? "Edit Task" : "Create Task"}
+            </h3>
             <form onSubmit={handleSubmit} className="space-y-3">
               <Text
                 label="Title"
@@ -442,7 +478,13 @@ export default function AdminTasks() {
   );
 }
 
-function TaskCard({ task, onMoveRight, onDelete, onEdit, isCompleted = false }) {
+function TaskCard({
+  task,
+  onMoveRight,
+  onDelete,
+  onEdit,
+  isCompleted = false,
+}) {
   return (
     <div className={`bg-white rounded-lg border p-4 shadow-sm`}>
       <div className="space-y-2">

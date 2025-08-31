@@ -272,14 +272,19 @@ const options = {
             {
               in: "query",
               name: "month",
-              schema: { type: "string", example: "2025-08", pattern: "^\\d{4}-\\d{2}$" },
+              schema: {
+                type: "string",
+                example: "2025-08",
+                pattern: "^\\d{4}-\\d{2}$",
+              },
               description: "Salary month in YYYY-MM format",
             },
             {
               in: "query",
               name: "baseSalary",
               schema: { type: "number", example: 50000 },
-              description: "Monthly base salary to use for calculation (overrides default config)",
+              description:
+                "Monthly base salary to use for calculation (overrides default config)",
             },
             {
               in: "query",
@@ -291,7 +296,8 @@ const options = {
               in: "query",
               name: "workingDays",
               schema: { type: "integer", minimum: 1, example: 26 },
-              description: "Total working days in the selected month (defaults to 26 if omitted)",
+              description:
+                "Total working days in the selected month (defaults to 26 if omitted)",
             },
           ],
           responses: { 200: { description: "OK" } },

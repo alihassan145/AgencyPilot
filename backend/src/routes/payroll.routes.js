@@ -23,9 +23,7 @@ router.post(
     body("overtimeEnabled").optional().isBoolean(),
     body("overtimeBonusPerHour").optional().isNumeric(),
     body("overtimeAmount").optional().isNumeric(),
-    body("overtimeUnit")
-      .optional()
-      .isIn(["per_minute", "per_hour", "per_day"]),
+    body("overtimeUnit").optional().isIn(["per_minute", "per_hour", "per_day"]),
     body("officialStart").optional().isString(),
     body("officialEnd").optional().isString(),
     body("defaultBaseSalary").optional().isNumeric(),
