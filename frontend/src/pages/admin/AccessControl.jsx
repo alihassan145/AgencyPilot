@@ -15,9 +15,28 @@ import {
   FaLock,
 } from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
+import { useAuth } from "../../context/AuthContext";
 
 // Admin Access Control page redesigned to match the provided UI
 export default function AccessControl() {
+  const { user } = useAuth();
+  const isAdmin = (user?.role || "").toLowerCase() === "admin";
+
+  // Guard: Only admins can view/access this page
+  if (!isAdmin) {
+    return (
+      <div className="max-w-3xl mx-auto p-6">
+        <div className="bg-white border border-gray-200 rounded-xl shadow p-8 text-center">
+          <div className="text-5xl mb-4">🔒</div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
+          <p className="text-gray-600">
+            You do not have permission to view Access Control. Please contact your administrator.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [roles, setRoles] = useState(["admin", "manager", "employee", "client"]);

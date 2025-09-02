@@ -14,7 +14,7 @@ import EmployeeAttendance from "./employee/EmployeeAttendance";
 import EmployeeLeaves from "./employee/EmployeeLeaves";
 import EmployeeNotifications from "./employee/EmployeeNotifications";
 import Layout from "./Layout";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ClientManagement from "./admin/ClientManagement";
 import AdminTasks from "./admin/AdminTasks";
 import AdminTeam from "./admin/AdminTeam";
@@ -27,15 +27,155 @@ import AdminLeads from "./admin/AdminLeads";
 import AdminNotifications from "./admin/AdminNotifications";
 import Profile from "./Profile";
 import AccessControl from "./admin/AccessControl";
+import api from "../api/client";
+
+// Map each tab to the minimum permission keys that grant visibility
+const TAB_PERMISSIONS = {
+  dashboard: ["dashboard-view-self", "dashboard-view-team", "dashboard-view-all"],
+  clients: ["clients-view-self", "clients-view-team", "clients-view-all"],
+  leads: ["leads-view-self", "leads-view-team", "leads-view-all"],
+  tasks: ["tasks-view-self", "tasks-view-team", "tasks-view-all"],
+  team: ["team-view-self", "team-view-team", "team-view-all"],
+  calendar: ["calendar-view-self", "calendar-view-team", "calendar-view-all"],
+  reports: ["reports-view-self", "reports-view-team", "reports-view-all"],
+  attendance: ["attendance-view-self", "attendance-view-team", "attendance-view-all"],
+  leaves: ["leaves-view-self", "leaves-view-team", "leaves-view-all"],
+  payroll: ["payroll-view-self", "payroll-view-team", "payroll-view-all"],
+  notifications: ["notifications-view-self", "notifications-view-team", "notifications-view-all"],
+  // access-control handled explicitly by role (admin only)
+};
+
+const ALL_TABS = [
+  "dashboard",
+  "clients",
+  "leads",
+  "tasks",
+  "team",
+  "calendar",
+  "attendance",
+  "leaves",
+  "payroll",
+  "reports",
+  "notifications",
+  "access-control",
+];
+
+// Fallback role-based nav (used until permissions are fetched)
+const ROLE_NAV_ITEMS = {
+  admin: [
+    "dashboard",
+    "clients",
+    "leads",
+    "tasks",
+    "team",
+    "calendar",
+    "attendance",
+    "leaves",
+    "payroll",
+    "reports",
+    "access-control",
+  ],
+  manager: [
+    "dashboard",
+    "leads",
+    "tasks",
+    "calendar",
+    "reports",
+    "attendance",
+    "leaves",
+  ],
+  employee: [
+    "dashboard",
+    "tasks",
+    "calendar",
+    "reports",
+    "attendance",
+    "leaves",
+  ],
+  client: ["dashboard", "calendar", "reports"],
+};
+
+function canSeeTab(perms, role, tabKey) {
+  if (tabKey === "access-control") return role === "admin";
+  const required = TAB_PERMISSIONS[tabKey] || [];
+  return required.some((key) => perms && perms[key] === true);
+}
 
 export default function Dashboard({ userRole = "admin" }) {
   const [currentPage, setCurrentPage] = useState("dashboard");
+  const [deniedTab, setDeniedTab] = useState(null);
+
+  // Fetch user permissions to guard access to pages
+  const [myPerms, setMyPerms] = useState(null);
+  useEffect(() => {
+    let mounted = true;
+    api
+      .get("/permissions/my")
+      .then(({ data }) => {
+        if (mounted) setMyPerms(data || {});
+      })
+      .catch(() => {
+        if (mounted) setMyPerms(null);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const visibleTabKeys = useMemo(() => {
+    if (myPerms) {
+      return ALL_TABS.filter((k) => canSeeTab(myPerms, userRole, k));
+    }
+    return ROLE_NAV_ITEMS[userRole] || ROLE_NAV_ITEMS.admin;
+  }, [myPerms, userRole]);
+
+  // Guard: if currentPage becomes disallowed (after permissions load or change), redirect only for initial/unknown states
+  useEffect(() => {
+    if (currentPage === "profile" || currentPage === "forbidden") return; // let forbidden show
+    const isAllowed = visibleTabKeys.includes(currentPage);
+    if (!isAllowed) {
+      const fallback = visibleTabKeys.includes("dashboard")
+        ? "dashboard"
+        : (visibleTabKeys[0] || "dashboard");
+      if (fallback && fallback !== currentPage) {
+        setCurrentPage(fallback);
+      }
+    }
+  }, [visibleTabKeys, currentPage]);
 
   const handleTabChange = (tabName) => {
-    setCurrentPage(tabName);
+    if (tabName === "profile") {
+      setDeniedTab(null);
+      setCurrentPage(tabName);
+      return;
+    }
+    // Only allow navigation to permitted tabs
+    const isAllowed = visibleTabKeys.includes(tabName);
+    if (isAllowed) {
+      setDeniedTab(null);
+      setCurrentPage(tabName);
+    } else {
+      // Show access denied screen instead of silently redirecting
+      setDeniedTab(tabName);
+      setCurrentPage("forbidden");
+    }
   };
 
+  const ForbiddenPanel = () => (
+    <div className="max-w-3xl mx-auto p-6">
+      <div className="bg-white border border-gray-200 rounded-xl shadow p-8 text-center">
+        <div className="text-5xl mb-4">🔒</div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
+        <p className="text-gray-600">
+          You do not have permission to view this section{deniedTab ? ` (${deniedTab})` : ""}. If you believe this is a mistake, please contact your administrator.
+        </p>
+      </div>
+    </div>
+  );
+
   const renderPageContent = () => {
+    if (currentPage === "forbidden") return <ForbiddenPanel />;
+
     if (userRole === "admin") {
       switch (currentPage) {
         case "dashboard":
@@ -72,6 +212,7 @@ export default function Dashboard({ userRole = "admin" }) {
     if (currentPage === "profile") return <Profile />;
     return renderDashboardContent();
   };
+
   const renderDashboardContent = () => {
     switch (userRole) {
       case "admin":
@@ -104,9 +245,9 @@ export default function Dashboard({ userRole = "admin" }) {
           case "dashboard":
             return <EmployeeDashboard />;
           case "tasks":
-              return <EmployeeTasks />;
-            case "leads":
-              return <AdminLeads />;
+            return <EmployeeTasks />;
+          case "leads":
+            return <AdminLeads />;
           case "calendar":
             return <EmployeeCalendar />;
           case "reports":
@@ -115,6 +256,21 @@ export default function Dashboard({ userRole = "admin" }) {
             return <EmployeeAttendance />;
           case "leaves":
             return <EmployeeLeaves />;
+          case "notifications":
+            return <EmployeeNotifications />;
+          default:
+            return <EmployeeDashboard />;
+        }
+
+      case "client":
+        // Client users have a limited set of pages; reuse employee views with server-side scoping
+        switch (currentPage) {
+          case "dashboard":
+            return <EmployeeDashboard />;
+          case "calendar":
+            return <EmployeeCalendar />;
+          case "reports":
+            return <EmployeeReports />;
           case "notifications":
             return <EmployeeNotifications />;
           default:

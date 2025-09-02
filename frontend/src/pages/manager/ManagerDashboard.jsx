@@ -1,14 +1,39 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchManagerStats } from "../../store/dashboardSlice";
+import { usePermissions } from "../../hooks/usePermissions";
 
 export default function ManagerDashboard() {
   const dispatch = useDispatch();
   const { stats, loading } = useSelector((s) => s.dashboard);
+  const { anyPerm } = usePermissions();
+
+  const canViewDashboard = anyPerm([
+    "dashboard-view-all",
+    "dashboard-view-team",
+    "dashboard-view-self",
+  ]);
+  const canViewAttendance = anyPerm([
+    "attendance-view-all",
+    "attendance-view-team",
+    "attendance-view-self",
+  ]);
+  const canViewTasks = anyPerm([
+    "tasks-view-all",
+    "tasks-view-team",
+    "tasks-view-self",
+  ]);
+  const canViewClients = anyPerm([
+    "clients-view-all",
+    "clients-view-team",
+    "clients-view-self",
+  ]);
 
   useEffect(() => {
-    dispatch(fetchManagerStats());
-  }, [dispatch]);
+    if (canViewDashboard) {
+      dispatch(fetchManagerStats());
+    }
+  }, [dispatch, canViewDashboard]);
 
   const pie = [
     {
@@ -18,6 +43,17 @@ export default function ManagerDashboard() {
     { name: "In Progress", value: Math.floor(stats.activeTasks / 2) },
     { name: "Completed", value: stats.completedTasks },
   ];
+
+  if (!canViewDashboard) {
+    return (
+      <div className="py-6 space-y-4 bg-gray-50 min-h-screen max-w-4xl mx-auto px-4">
+        <div className="bg-white border rounded-xl p-6 text-center">
+          <div className="text-5xl mb-2">🔒</div>
+          <div className="text-lg font-semibold">You do not have access to the dashboard overview.</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="py-6 space-y-8 bg-gray-50 min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,51 +65,61 @@ export default function ManagerDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card
-          title="Active Tasks"
-          value={String(stats.activeTasks)}
-          subtitle="Team in progress"
-          color="from-green-600 to-teal-600"
-          icon="📝"
-        />
-        <Card
-          title="Completed"
-          value={String(stats.completedTasks)}
-          subtitle="This scope"
-          color="from-orange-600 to-amber-600"
-          icon="✔️"
-        />
-        <Card
-          title="Present Today"
-          value={String(stats.presentToday)}
-          subtitle="Team attendance"
-          color="from-blue-600 to-sky-600"
-          icon="🕒"
-        />
-        <Card
-          title="Clients (team)"
-          value={"-"}
-          subtitle="Scoped"
-          color="from-purple-600 to-indigo-600"
-          icon="🏢"
-        />
+        {canViewTasks && (
+          <Card
+            title="Active Tasks"
+            value={String(stats.activeTasks)}
+            subtitle="Team in progress"
+            color="from-green-600 to-teal-600"
+            icon="📝"
+          />
+        )}
+        {canViewTasks && (
+          <Card
+            title="Completed"
+            value={String(stats.completedTasks)}
+            subtitle="This scope"
+            color="from-orange-600 to-amber-600"
+            icon="✔️"
+          />
+        )}
+        {canViewAttendance && (
+          <Card
+            title="Present Today"
+            value={String(stats.presentToday)}
+            subtitle="Team attendance"
+            color="from-blue-600 to-sky-600"
+            icon="🕒"
+          />
+        )}
+        {canViewClients && (
+          <Card
+            title="Clients (team)"
+            value={typeof stats.teamClients === 'number' ? String(stats.teamClients) : "-"}
+            subtitle="Scoped"
+            color="from-purple-600 to-indigo-600"
+            icon="🏢"
+          />
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow">
-          <h2 className="font-semibold text-lg text-gray-800 mb-4">
-            Task Progress
-          </h2>
-          <div className="flex items-center gap-4">
-            {pie.map((p) => (
-              <Legend
-                key={p.name}
-                label={`${p.name}: ${p.value}`}
-                color="#6366F1"
-              />
-            ))}
+        {canViewTasks && (
+          <div className="bg-white p-6 rounded-2xl shadow">
+            <h2 className="font-semibold text-lg text-gray-800 mb-4">
+              Task Progress
+            </h2>
+            <div className="flex items-center gap-4">
+              {pie.map((p) => (
+                <Legend
+                  key={p.name}
+                  label={`${p.name}: ${p.value}`}
+                  color="#6366F1"
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
         <div className="bg-white p-6 rounded-2xl shadow">
           <h2 className="font-semibold text-lg text-gray-800 mb-4">
             Recent Activity
