@@ -14,7 +14,8 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
     password: { type: String, required: true, select: false },
-    role: { type: String, enum: ROLES, required: true, default: "employee" },
+    // Remove enum restriction to support dynamically created roles
+    role: { type: String, required: true, default: "employee" },
     department: { type: mongoose.Schema.Types.ObjectId, ref: "Department" },
     reportingManagers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     client: { type: mongoose.Schema.Types.ObjectId, ref: "Client" },

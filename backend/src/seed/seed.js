@@ -67,8 +67,8 @@ async function run() {
   }
 
   console.log("Seed complete:", {
-    adminEmail,
-    managerEmail,
+    // adminEmail,
+    // managerEmail,
     employeeEmail,
     departments: departments.length,
   });

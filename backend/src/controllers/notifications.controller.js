@@ -14,7 +14,7 @@ const listNotifications = asyncHandler(async (req, res) => {
 });
 
 const createNotification = asyncHandler(async (req, res) => {
-  const { userId, type, title, message } = req.body;
+  const { userId, type, title, message, priority } = req.body;
   
   // Check if user can create notifications
   if (!hasPermission(req.user.role, 'notifications-add')) {
@@ -24,11 +24,15 @@ const createNotification = asyncHandler(async (req, res) => {
     });
   }
   
+  const targetUserId = userId || req.user.id;
   const notification = await Notification.create({
-    user: userId,
-    type,
+    user: targetUserId,
+    createdBy: req.user.id,
+    assignedTo: targetUserId,
+    type: type || 'general',
     title,
     message,
+    priority: priority || 'medium',
   });
   
   const populated = await Notification.findById(notification._id)
@@ -39,7 +43,7 @@ const createNotification = asyncHandler(async (req, res) => {
 
 const updateNotification = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { type, title, message, read } = req.body;
+  const { type, title, message, read, priority } = req.body;
   
   // Check if user can edit notifications
   if (!hasPermission(req.user.role, 'notifications-edit')) {
@@ -57,9 +61,16 @@ const updateNotification = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Notification not found" });
   }
   
+  const updatePayload = {};
+  if (typeof type !== 'undefined') updatePayload.type = type;
+  if (typeof title !== 'undefined') updatePayload.title = title;
+  if (typeof message !== 'undefined') updatePayload.message = message;
+  if (typeof read !== 'undefined') updatePayload.read = read;
+  if (typeof priority !== 'undefined') updatePayload.priority = priority;
+  
   const updated = await Notification.findByIdAndUpdate(
     id,
-    { type, title, message, read },
+    updatePayload,
     { new: true }
   ).populate('user', 'name role');
   
@@ -146,6 +157,7 @@ const exportNotifications = asyncHandler(async (req, res) => {
     title: notification.title,
     message: notification.message,
     read: notification.read ? 'Yes' : 'No',
+    priority: notification.priority || 'medium',
     created_at: notification.createdAt,
     updated_at: notification.updatedAt,
   }));

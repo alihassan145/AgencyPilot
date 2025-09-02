@@ -42,7 +42,8 @@ const TABS = {
   },
 };
 
-export const ROLE_NAV_ITEMS = {
+// Fallback role-based nav (used until permissions are fetched)
+const ROLE_NAV_ITEMS = {
   admin: [
     "dashboard",
     "clients",
@@ -75,6 +76,28 @@ export const ROLE_NAV_ITEMS = {
   ],
   client: ["dashboard", "calendar", "reports"],
 };
+
+// Map each tab to the minimum permission keys that grant visibility
+const TAB_PERMISSIONS = {
+  dashboard: ["dashboard-view-self", "dashboard-view-team", "dashboard-view-all"],
+  clients: ["clients-view-self", "clients-view-team", "clients-view-all"],
+  leads: ["leads-view-self", "leads-view-team", "leads-view-all"],
+  tasks: ["tasks-view-self", "tasks-view-team", "tasks-view-all"],
+  team: ["team-view-self", "team-view-team", "team-view-all"],
+  calendar: ["calendar-view-self", "calendar-view-team", "calendar-view-all"],
+  reports: ["reports-view-self", "reports-view-team", "reports-view-all"],
+  attendance: ["attendance-view-self", "attendance-view-team", "attendance-view-all"],
+  leaves: ["leaves-view-self", "leaves-view-team", "leaves-view-all"],
+  payroll: ["payroll-view-self", "payroll-view-team", "payroll-view-all"],
+  notifications: ["notifications-view-self", "notifications-view-team", "notifications-view-all"],
+  // access-control handled explicitly below
+};
+
+function canSeeTab(perms, role, tabKey) {
+  if (tabKey === "access-control") return role === "admin";
+  const required = TAB_PERMISSIONS[tabKey] || [];
+  return required.some((key) => perms && perms[key] === true);
+}
 
 export default function TopNavbar({ onTabChange }) {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -128,6 +151,32 @@ export default function TopNavbar({ onTabChange }) {
   const displayName = rawName.replace(/^System\s+/i, "").trim();
   const avatarLetter = (displayName || "U").slice(0, 1).toUpperCase();
 
+  // Build visible tabs by permission
+  const [myPerms, setMyPerms] = useState(null);
+  const userRole = user?.role || "client";
+  useEffect(() => {
+    let mounted = true;
+    api
+      .get("/permissions/my")
+      .then(({ data }) => {
+        if (mounted) setMyPerms(data || {});
+      })
+      .catch(() => {
+        if (mounted) setMyPerms(null);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const visibleTabKeys = myPerms
+    ? Object.keys(TABS).filter((k) => canSeeTab(myPerms, userRole, k))
+    : (ROLE_NAV_ITEMS[userRole] || ROLE_NAV_ITEMS.admin);
+
+  const canSeeNotifications = myPerms
+    ? canSeeTab(myPerms, userRole, 'notifications')
+    : ((ROLE_NAV_ITEMS[userRole] || []).includes('notifications'));
+
   // Change password is on the Profile page
   return (
     <>
@@ -150,7 +199,8 @@ export default function TopNavbar({ onTabChange }) {
           </div>
 
           {/* User Avatar */}
-          <button
+          {canSeeNotifications && (
+            <button
               onClick={() => handleTabClick("notifications")}
               className="relative p-2 rounded-md hover:bg-gray-100 mr-4"
             >
@@ -161,7 +211,8 @@ export default function TopNavbar({ onTabChange }) {
                 </span>
               )}
             </button>
-            <div className="relative" ref={dropdownRef}>
+          )}
+          <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
               className={`flex items-center space-x-2 px-3 py-2 rounded-md border transition-colors ${
@@ -210,9 +261,9 @@ export default function TopNavbar({ onTabChange }) {
 
         {/* Bottom Row: Navigation Tabs */}
         <div className="py-3 border-t border-gray-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-auto">
-            <div className="flex space-x-6 text-sm font-medium min-w-max">
-              {(ROLE_NAV_ITEMS[user?.role] || ROLE_NAV_ITEMS.admin).map((key) => (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium">
+              {visibleTabKeys.map((key) => (
                 <NavTab
                   key={key}
                   active={activeTab === key}

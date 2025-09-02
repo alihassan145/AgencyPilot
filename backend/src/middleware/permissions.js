@@ -92,13 +92,13 @@ const PERMISSIONS = {
     'reports-export': true,
     
     // Notifications permissions
-    'notifications-view-all': false,
-    'notifications-view-team': false,
+    'notifications-view-all': true,
+    'notifications-view-team': true,
     'notifications-view-self': true,
     'notifications-add': true,
     'notifications-edit': true,
-    'notifications-delete': false,
-    'notifications-export': false,
+    'notifications-delete': true,
+    'notifications-export': true,
   },
   
   manager: {
@@ -190,12 +190,12 @@ const PERMISSIONS = {
     'reports-delete': false,
     'reports-export': false,
     
-    // Notifications permissions - self only
+    // Notifications permissions - team and self with limited actions
     'notifications-view-all': false,
-    'notifications-view-team': false,
+    'notifications-view-team': true,
     'notifications-view-self': true,
-    'notifications-add': false,
-    'notifications-edit': false,
+    'notifications-add': true,
+    'notifications-edit': true,
     'notifications-delete': false,
     'notifications-export': false,
   },
