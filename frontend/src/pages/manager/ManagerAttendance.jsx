@@ -53,9 +53,7 @@ export default function ManagerAttendance() {
                       : a.totalHours}
                   </td>
                   <td className="px-4 py-3">{a.wasLate ? "Yes" : "No"}</td>
-                  <td className="px-4 py-3">
-                    {typeof a.lateMinutes === "number" ? a.lateMinutes : "-"}
-                  </td>
+                  <td className="px-4 py-3">{typeof a.lateMinutes === "number" ? a.lateMinutes : "-"}</td>
                 </tr>
               ))}
           </tbody>

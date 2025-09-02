@@ -490,10 +490,10 @@ export default function AdminTeam() {
                             : ["admin", "manager"].includes(m.role)
                         )
                         .map((manager) => (
-                          <option key={manager._id} value={manager._id}>
-                            {manager.name} ({manager.role})
-                          </option>
-                        ))}
+                        <option key={manager._id} value={manager._id}>
+                          {manager.name} ({manager.role})
+                        </option>
+                      ))}
                     </select>
                   </div>
                 )}

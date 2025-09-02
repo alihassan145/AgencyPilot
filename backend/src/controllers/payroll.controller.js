@@ -76,36 +76,24 @@ const myEarnings = asyncHandler(async (req, res) => {
   const lateHours = Number((lateMinutes / 60).toFixed(2));
 
   // Overtime
-  const overtimeHours = records.reduce(
-    (sum, r) => sum + (r.overtimeHours || 0),
-    0
-  );
+  const overtimeHours = records.reduce((sum, r) => sum + (r.overtimeHours || 0), 0);
 
   // Compute daily official hours and expected monthly hours
   const dailyHours = dailyOfficialHours(config, start.toDate());
   const expectedMonthlyHours = dailyHours * workingDays;
   const workedHours = records.reduce((sum, r) => sum + (r.totalHours || 0), 0);
-  const prorationFactor =
-    expectedMonthlyHours > 0
-      ? Math.min(1, workedHours / expectedMonthlyHours)
-      : 0;
+  const prorationFactor = expectedMonthlyHours > 0 ? Math.min(1, workedHours / expectedMonthlyHours) : 0;
 
   // Base salary and proration
-  const baseSalary = Number(
-    req.query.baseSalary || config.defaultBaseSalary || 0
-  );
+  const baseSalary = Number(req.query.baseSalary || config.defaultBaseSalary || 0);
   const proratedBase = Number((baseSalary * prorationFactor).toFixed(2));
 
   // Late deduction based on configured unit
-  const lateDeduction = calcByUnit(
-    config.latePenalty || 0,
-    config.latePenaltyUnit || "per_day",
-    {
-      minutes: lateMinutes,
-      hours: lateHours,
-      days: lateCount,
-    }
-  );
+  const lateDeduction = calcByUnit(config.latePenalty || 0, config.latePenaltyUnit || "per_day", {
+    minutes: lateMinutes,
+    hours: lateHours,
+    days: lateCount,
+  });
 
   // Unapproved absence double-deduction: param unapprovedAbsentDays
   const unapprovedAbsentDays = Number(req.query.unapprovedAbsentDays || 0);
@@ -115,35 +103,26 @@ const myEarnings = asyncHandler(async (req, res) => {
   // Overtime bonus if enabled
   let bonus = 0;
   if (config.overtimeEnabled) {
-    const amount =
-      config.overtimeAmount && config.overtimeAmount > 0
-        ? config.overtimeAmount
-        : config.overtimeBonusPerHour || 0;
-    const unit =
-      config.overtimeAmount && config.overtimeAmount > 0
-        ? config.overtimeUnit || "per_hour"
-        : "per_hour";
+    const amount = (config.overtimeAmount && config.overtimeAmount > 0)
+      ? config.overtimeAmount
+      : (config.overtimeBonusPerHour || 0);
+    const unit = (config.overtimeAmount && config.overtimeAmount > 0)
+      ? (config.overtimeUnit || "per_hour")
+      : "per_hour";
     bonus = calcByUnit(amount, unit, {
       minutes: overtimeHours * 60,
       hours: overtimeHours,
-      days: dailyHours > 0 ? overtimeHours / dailyHours : 0, // approximate days
+      days: dailyHours > 0 ? (overtimeHours / dailyHours) : 0, // approximate days
     });
   }
 
   // Professional tax threshold applied on prorated base
-  const professionalTax =
-    proratedBase > (config.professionalTaxThreshold || 12000)
-      ? config.professionalTaxAmount || 200
-      : 0;
+  const professionalTax = proratedBase > (config.professionalTaxThreshold || 12000)
+    ? (config.professionalTaxAmount || 200)
+    : 0;
 
-  const deductions = Math.max(
-    0,
-    lateDeduction + doubleDeduction + professionalTax
-  );
-  const totalEarnings = Math.max(
-    0,
-    Number((proratedBase - deductions + bonus).toFixed(2))
-  );
+  const deductions = Math.max(0, lateDeduction + doubleDeduction + professionalTax);
+  const totalEarnings = Math.max(0, Number((proratedBase - deductions + bonus).toFixed(2)));
 
   res.json({
     month,

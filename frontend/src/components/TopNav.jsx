@@ -10,6 +10,7 @@ import {
   FaMoneyBill,
   FaBell,
   FaAddressBook,
+  FaShieldAlt,
 } from "react-icons/fa";
 import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -34,6 +35,11 @@ const TABS = {
     label: "Notifications",
     icon: <FaBell />,
   },
+  "access-control": {
+    key: "access-control",
+    label: "Access Control",
+    icon: <FaShieldAlt />,
+  },
 };
 
 export const ROLE_NAV_ITEMS = {
@@ -48,6 +54,7 @@ export const ROLE_NAV_ITEMS = {
     "leaves",
     "payroll",
     "reports",
+    "access-control",
   ],
   manager: [
     "dashboard",
@@ -144,17 +151,17 @@ export default function TopNavbar({ onTabChange }) {
 
           {/* User Avatar */}
           <button
-            onClick={() => handleTabClick("notifications")}
-            className="relative p-2 rounded-md hover:bg-gray-100 mr-4"
-          >
-            <FaBell className="text-xl text-gray-600" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                {unreadCount}
-              </span>
-            )}
-          </button>
-          <div className="relative" ref={dropdownRef}>
+              onClick={() => handleTabClick("notifications")}
+              className="relative p-2 rounded-md hover:bg-gray-100 mr-4"
+            >
+              <FaBell className="text-xl text-gray-600" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+            <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
               className={`flex items-center space-x-2 px-3 py-2 rounded-md border transition-colors ${
@@ -205,17 +212,15 @@ export default function TopNavbar({ onTabChange }) {
         <div className="py-3 border-t border-gray-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-auto">
             <div className="flex space-x-6 text-sm font-medium min-w-max">
-              {(ROLE_NAV_ITEMS[user?.role] || ROLE_NAV_ITEMS.admin).map(
-                (key) => (
-                  <NavTab
-                    key={key}
-                    active={activeTab === key}
-                    icon={TABS[key].icon}
-                    label={TABS[key].label}
-                    onClick={() => handleTabClick(key)}
-                  />
-                )
-              )}
+              {(ROLE_NAV_ITEMS[user?.role] || ROLE_NAV_ITEMS.admin).map((key) => (
+                <NavTab
+                  key={key}
+                  active={activeTab === key}
+                  icon={TABS[key].icon}
+                  label={TABS[key].label}
+                  onClick={() => handleTabClick(key)}
+                />
+              ))}
             </div>
           </div>
         </div>

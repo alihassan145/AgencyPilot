@@ -1,0 +1,968 @@
+AP
+Agency Pro
+Role & Permission Management System
+
+3
+Current Role
+
+Admin
+
++ Create Role
+Switch Role
+Select Role to View Permissions
+Manage Roles
+
+A
+Admin
+Full control over all system features and data
+
+
+M
+Manager
+Self-access only by default - Admin must enable team permissions
+
+
+E
+Employee
+Control over self only - limited access
+
+
+C
+Client
+Access only to Dashboard, Tasks, Calendar, Reports, Notifications related to their own projects
+
+📊 Priority-Based Permission Matrix
+Complete access control for all Agency Pro features
+
+📊
+1. Dashboard
+Main dashboard access and overview
+
+Full Access
+View Dashboard (All)
+✓ ON
+View Dashboard (Team)
+✓ ON
+View Dashboard (Self)
+✓ ON
+🏢
+2. Clients
+Client management and administration
+
+Full Access
+View Clients (All)
+✓ ON
+View Clients (Team)
+✓ ON
+View Clients (Self)
+✓ ON
+Add Client
+✓ ON
+Edit Client
+✓ ON
+Delete Client
+✓ ON
+Export / Download Clients
+✓ ON
+🎯
+3. Leads
+Lead generation and conversion management
+
+Full Access
+View Leads (All)
+✓ ON
+View Leads (Team)
+✓ ON
+View Leads (Self)
+✓ ON
+Add Lead
+✓ ON
+Edit Lead
+✓ ON
+Delete Lead
+✓ ON
+Follow up status update
+✓ ON
+Import/Export / Download Leads
+✓ ON
+📋
+4. Projects & Tasks
+Project and task management system
+
+Full Access
+View Tasks (All)
+✓ ON
+View Tasks (Team)
+✓ ON
+View Tasks (Self)
+✓ ON
+Add Task
+✓ ON
+Edit Task
+✓ ON
+Delete Task
+✓ ON
+Export / Download Tasks
+✓ ON
+📅
+5. Calendar
+Calendar and event management
+
+Full Access
+View Events (All)
+✓ ON
+View Events (Team)
+✓ ON
+View Events (Self)
+✓ ON
+Add Event
+✓ ON
+Edit Event
+✓ ON
+Delete Event
+✓ ON
+Export / Download Calendar
+✓ ON
+👥
+6. Team
+Team member management
+
+Full Access
+View Team (All)
+✓ ON
+View Team (Self)
+✓ ON
+Add Team Member
+✓ ON
+Edit Team Member
+✓ ON
+Delete Team Member
+✓ ON
+Export / Download Team
+✓ ON
+⏰
+7. Attendance
+Attendance tracking and management
+
+Full Access
+View Attendance (All)
+✓ ON
+View Attendance (Team)
+✓ ON
+View Attendance (Self)
+✓ ON
+Add Attendance
+✓ ON
+Edit Attendance
+✓ ON
+Delete Attendance
+✓ ON
+Export / Download Attendance
+✓ ON
+🏖️
+8. Leaves
+Leave management and approval
+
+Full Access
+View Leaves (All)
+✓ ON
+View Leaves (Team)
+✓ ON
+View Leaves (Self)
+✓ ON
+Add Leave
+✓ ON
+Edit Leave
+✓ ON
+Delete Leave
+✓ ON
+Export / Download Leaves
+✓ ON
+💰
+9. Payroll
+Payroll management and processing
+
+Full Access
+View Payroll (All)
+✓ ON
+View Payroll (Team)
+✓ ON
+View Payroll (Self)
+✓ ON
+Download Payroll
+✓ ON
+Export Payroll
+✓ ON
+📈
+10. Reports
+Analytics and reporting system
+
+Full Access
+View Reports (All)
+✓ ON
+View Reports (Team)
+✓ ON
+View Reports (Self)
+✓ ON
+Add Report
+✓ ON
+Edit Report
+✓ ON
+Delete Report
+✓ ON
+Export / Download Reports
+✓ ON
+🔔
+11. Notifications
+Notification management and preferences
+
+Full Access
+View Notifications (All)
+✓ ON
+View Notifications (Team)
+✓ ON
+View Notifications (Self)
+✓ ON
+Add Notification
+✓ ON
+Edit Notification
+✓ ON
+Delete Notification
+✓ ON
+Export / Download Notifications
+✓ ON
+Current Role Permission Summary
+71
+71 Permissions ON
+Allowed Permissions
+
+0
+0 Permissions OFF
+Denied Permissions
+
+
+AP
+Agency Pro
+Role & Permission Management System
+
+3
+Current Role
+
+Manager
+
+🔒 No Permission
+Switch Role
+Select Role to View Permissions
+Manage Roles
+
+A
+Admin
+Full control over all system features and data
+
+
+M
+Manager
+Self-access only by default - Admin must enable team permissions
+
+
+E
+Employee
+Control over self only - limited access
+
+
+C
+Client
+Access only to Dashboard, Tasks, Calendar, Reports, Notifications related to their own projects
+
+📊 Priority-Based Permission Matrix
+Complete access control for all Agency Pro features
+
+📊
+1. Dashboard
+Main dashboard access and overview
+
+Partial Access
+View Dashboard (All)
+✗ OFF
+View Dashboard (Team)
+✗ OFF
+View Dashboard (Self)
+✓ ON
+🏢
+2. Clients
+Client management and administration
+
+Partial Access
+View Clients (All)
+✗ OFF
+View Clients (Team)
+✗ OFF
+View Clients (Self)
+✓ ON
+Add Client
+✗ OFF
+Edit Client
+✗ OFF
+Delete Client
+✗ OFF
+Export / Download Clients
+✗ OFF
+🎯
+3. Leads
+Lead generation and conversion management
+
+Partial Access
+View Leads (All)
+✗ OFF
+View Leads (Team)
+✗ OFF
+View Leads (Self)
+✓ ON
+Add Lead
+✓ ON
+Edit Lead
+✓ ON
+Delete Lead
+✗ OFF
+Follow up status update
+✗ OFF
+Import/Export / Download Leads
+✗ OFF
+📋
+4. Projects & Tasks
+Project and task management system
+
+Partial Access
+View Tasks (All)
+✗ OFF
+View Tasks (Team)
+✗ OFF
+View Tasks (Self)
+✓ ON
+Add Task
+✓ ON
+Edit Task
+✓ ON
+Delete Task
+✗ OFF
+Export / Download Tasks
+✗ OFF
+📅
+5. Calendar
+Calendar and event management
+
+Partial Access
+View Events (All)
+✗ OFF
+View Events (Team)
+✗ OFF
+View Events (Self)
+✓ ON
+Add Event
+✓ ON
+Edit Event
+✓ ON
+Delete Event
+✓ ON
+Export / Download Calendar
+✗ OFF
+👥
+6. Team
+Team member management
+
+Partial Access
+View Team (All)
+✗ OFF
+View Team (Self)
+✓ ON
+Add Team Member
+✗ OFF
+Edit Team Member
+✗ OFF
+Delete Team Member
+✗ OFF
+Export / Download Team
+✗ OFF
+⏰
+7. Attendance
+Attendance tracking and management
+
+Partial Access
+View Attendance (All)
+✗ OFF
+View Attendance (Team)
+✗ OFF
+View Attendance (Self)
+✓ ON
+Add Attendance
+✓ ON
+Edit Attendance
+✗ OFF
+Delete Attendance
+✗ OFF
+Export / Download Attendance
+✗ OFF
+🏖️
+8. Leaves
+Leave management and approval
+
+Partial Access
+View Leaves (All)
+✗ OFF
+View Leaves (Team)
+✗ OFF
+View Leaves (Self)
+✓ ON
+Add Leave
+✓ ON
+Edit Leave
+✓ ON
+Delete Leave
+✓ ON
+Export / Download Leaves
+✗ OFF
+💰
+9. Payroll
+Payroll management and processing
+
+Partial Access
+View Payroll (All)
+✗ OFF
+View Payroll (Team)
+✗ OFF
+View Payroll (Self)
+✓ ON
+Download Payroll
+✓ ON
+Export Payroll
+✗ OFF
+📈
+10. Reports
+Analytics and reporting system
+
+Partial Access
+View Reports (All)
+✗ OFF
+View Reports (Team)
+✗ OFF
+View Reports (Self)
+✓ ON
+Add Report
+✗ OFF
+Edit Report
+✗ OFF
+Delete Report
+✗ OFF
+Export / Download Reports
+✗ OFF
+🔔
+11. Notifications
+Notification management and preferences
+
+Partial Access
+View Notifications (All)
+✗ OFF
+View Notifications (Team)
+✗ OFF
+View Notifications (Self)
+✓ ON
+Add Notification
+✗ OFF
+Edit Notification
+✗ OFF
+Delete Notification
+✗ OFF
+Export / Download Notifications
+✗ OFF
+Current Role Permission Summary
+23
+23 Permissions ON
+Allowed Permissions
+
+48
+48 Permissions OFF
+Denied Permissions
+
+AP
+Agency Pro
+Role & Permission Management System
+
+3
+Current Role
+
+Employee
+
+🔒 No Permission
+Switch Role
+Select Role to View Permissions
+Manage Roles
+
+A
+Admin
+Full control over all system features and data
+
+
+M
+Manager
+Self-access only by default - Admin must enable team permissions
+
+
+E
+Employee
+Control over self only - limited access
+
+
+C
+Client
+Access only to Dashboard, Tasks, Calendar, Reports, Notifications related to their own projects
+
+📊 Priority-Based Permission Matrix
+Complete access control for all Agency Pro features
+
+📊
+1. Dashboard
+Main dashboard access and overview
+
+Partial Access
+View Dashboard (All)
+✗ OFF
+View Dashboard (Team)
+✗ OFF
+View Dashboard (Self)
+✓ ON
+🏢
+2. Clients
+Client management and administration
+
+All OFF
+View Clients (All)
+✗ OFF
+View Clients (Team)
+✗ OFF
+View Clients (Self)
+✗ OFF
+Add Client
+✗ OFF
+Edit Client
+✗ OFF
+Delete Client
+✗ OFF
+Export / Download Clients
+✗ OFF
+🎯
+3. Leads
+Lead generation and conversion management
+
+Partial Access
+View Leads (All)
+✗ OFF
+View Leads (Team)
+✗ OFF
+View Leads (Self)
+✓ ON
+Add Lead
+✓ ON
+Edit Lead
+✓ ON
+Delete Lead
+✗ OFF
+Follow up status update
+✗ OFF
+Import/Export / Download Leads
+✗ OFF
+📋
+4. Projects & Tasks
+Project and task management system
+
+Partial Access
+View Tasks (All)
+✗ OFF
+View Tasks (Team)
+✗ OFF
+View Tasks (Self)
+✓ ON
+Add Task
+✓ ON
+Edit Task
+✓ ON
+Delete Task
+✗ OFF
+Export / Download Tasks
+✗ OFF
+📅
+5. Calendar
+Calendar and event management
+
+Partial Access
+View Events (All)
+✗ OFF
+View Events (Team)
+✗ OFF
+View Events (Self)
+✓ ON
+Add Event
+✓ ON
+Edit Event
+✓ ON
+Delete Event
+✓ ON
+Export / Download Calendar
+✗ OFF
+👥
+6. Team
+Team member management
+
+Partial Access
+View Team (All)
+✗ OFF
+View Team (Self)
+✓ ON
+Add Team Member
+✗ OFF
+Edit Team Member
+✗ OFF
+Delete Team Member
+✗ OFF
+Export / Download Team
+✗ OFF
+⏰
+7. Attendance
+Attendance tracking and management
+
+Partial Access
+View Attendance (All)
+✗ OFF
+View Attendance (Team)
+✗ OFF
+View Attendance (Self)
+✓ ON
+Add Attendance
+✓ ON
+Edit Attendance
+✗ OFF
+Delete Attendance
+✗ OFF
+Export / Download Attendance
+✗ OFF
+🏖️
+8. Leaves
+Leave management and approval
+
+Partial Access
+View Leaves (All)
+✗ OFF
+View Leaves (Team)
+✗ OFF
+View Leaves (Self)
+✓ ON
+Add Leave
+✓ ON
+Edit Leave
+✓ ON
+Delete Leave
+✓ ON
+Export / Download Leaves
+✗ OFF
+💰
+9. Payroll
+Payroll management and processing
+
+Partial Access
+View Payroll (All)
+✗ OFF
+View Payroll (Team)
+✗ OFF
+View Payroll (Self)
+✓ ON
+Download Payroll
+✓ ON
+Export Payroll
+✗ OFF
+📈
+10. Reports
+Analytics and reporting system
+
+Partial Access
+View Reports (All)
+✗ OFF
+View Reports (Team)
+✗ OFF
+View Reports (Self)
+✓ ON
+Add Report
+✗ OFF
+Edit Report
+✗ OFF
+Delete Report
+✗ OFF
+Export / Download Reports
+✗ OFF
+🔔
+11. Notifications
+Notification management and preferences
+
+Partial Access
+View Notifications (All)
+✗ OFF
+View Notifications (Team)
+✗ OFF
+View Notifications (Self)
+✓ ON
+Add Notification
+✗ OFF
+Edit Notification
+✗ OFF
+Delete Notification
+✗ OFF
+Export / Download Notifications
+✗ OFF
+Current Role Permission Summary
+22
+22 Permissions ON
+Allowed Permissions
+
+49
+49 Permissions OFF
+Denied Permissions
+
+AP
+Agency Pro
+Role & Permission Management System
+
+3
+Current Role
+
+Client
+
+🔒 No Permission
+Switch Role
+Select Role to View Permissions
+Manage Roles
+
+A
+Admin
+Full control over all system features and data
+
+
+M
+Manager
+Self-access only by default - Admin must enable team permissions
+
+
+E
+Employee
+Control over self only - limited access
+
+
+C
+Client
+Access only to Dashboard, Tasks, Calendar, Reports, Notifications related to their own projects
+
+📊 Priority-Based Permission Matrix
+Complete access control for all Agency Pro features
+
+📊
+1. Dashboard
+Main dashboard access and overview
+
+Partial Access
+View Dashboard (All)
+✗ OFF
+View Dashboard (Team)
+✗ OFF
+View Dashboard (Self)
+✓ ON
+🏢
+2. Clients
+Client management and administration
+
+All OFF
+View Clients (All)
+✗ OFF
+View Clients (Team)
+✗ OFF
+View Clients (Self)
+✗ OFF
+Add Client
+✗ OFF
+Edit Client
+✗ OFF
+Delete Client
+✗ OFF
+Export / Download Clients
+✗ OFF
+🎯
+3. Leads
+Lead generation and conversion management
+
+All OFF
+View Leads (All)
+✗ OFF
+View Leads (Team)
+✗ OFF
+View Leads (Self)
+✗ OFF
+Add Lead
+✗ OFF
+Edit Lead
+✗ OFF
+Delete Lead
+✗ OFF
+Follow up status update
+✗ OFF
+Import/Export / Download Leads
+✗ OFF
+📋
+4. Projects & Tasks
+Project and task management system
+
+Partial Access
+View Tasks (All)
+✗ OFF
+View Tasks (Team)
+✗ OFF
+View Tasks (Self)
+✓ ON
+Add Task
+✗ OFF
+Edit Task
+✗ OFF
+Delete Task
+✗ OFF
+Export / Download Tasks
+✗ OFF
+📅
+5. Calendar
+Calendar and event management
+
+Partial Access
+View Events (All)
+✗ OFF
+View Events (Team)
+✗ OFF
+View Events (Self)
+✓ ON
+Add Event
+✗ OFF
+Edit Event
+✗ OFF
+Delete Event
+✗ OFF
+Export / Download Calendar
+✗ OFF
+👥
+6. Team
+Team member management
+
+All OFF
+View Team (All)
+✗ OFF
+View Team (Self)
+✗ OFF
+Add Team Member
+✗ OFF
+Edit Team Member
+✗ OFF
+Delete Team Member
+✗ OFF
+Export / Download Team
+✗ OFF
+⏰
+7. Attendance
+Attendance tracking and management
+
+All OFF
+View Attendance (All)
+✗ OFF
+View Attendance (Team)
+✗ OFF
+View Attendance (Self)
+✗ OFF
+Add Attendance
+✗ OFF
+Edit Attendance
+✗ OFF
+Delete Attendance
+✗ OFF
+Export / Download Attendance
+✗ OFF
+🏖️
+8. Leaves
+Leave management and approval
+
+All OFF
+View Leaves (All)
+✗ OFF
+View Leaves (Team)
+✗ OFF
+View Leaves (Self)
+✗ OFF
+Add Leave
+✗ OFF
+Edit Leave
+✗ OFF
+Delete Leave
+✗ OFF
+Export / Download Leaves
+✗ OFF
+💰
+9. Payroll
+Payroll management and processing
+
+All OFF
+View Payroll (All)
+✗ OFF
+View Payroll (Team)
+✗ OFF
+View Payroll (Self)
+✗ OFF
+Download Payroll
+✗ OFF
+Export Payroll
+✗ OFF
+📈
+10. Reports
+Analytics and reporting system
+
+Partial Access
+View Reports (All)
+✗ OFF
+View Reports (Team)
+✗ OFF
+View Reports (Self)
+✓ ON
+Add Report
+✗ OFF
+Edit Report
+✗ OFF
+Delete Report
+✗ OFF
+Export / Download Reports
+✗ OFF
+🔔
+11. Notifications
+Notification management and preferences
+
+Partial Access
+View Notifications (All)
+✗ OFF
+View Notifications (Team)
+✗ OFF
+View Notifications (Self)
+✓ ON
+Add Notification
+✗ OFF
+Edit Notification
+✗ OFF
+Delete Notification
+✗ OFF
+Export / Download Notifications
+✗ OFF
+Current Role Permission Summary
+5
+5 Permissions ON
+Allowed Permissions
+
+66
+66 Permissions OFF
+Denied Permissions

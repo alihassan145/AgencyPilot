@@ -364,10 +364,7 @@ export default function ClientManagement() {
             <h3 className="text-lg font-semibold">
               {editing ? "Edit Client" : "Add New Client"}
             </h3>
-            <form
-              onSubmit={handleSubmit}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-            >
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Text
                 label="Company Name"
                 value={form.companyName}

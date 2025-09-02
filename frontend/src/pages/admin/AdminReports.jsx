@@ -15,12 +15,7 @@ export default function AdminReports() {
   const [form, setForm] = useState({ title: "", content: "", client: "" });
   const [clients, setClients] = useState([]);
   const [employees, setEmployees] = useState([]);
-  const [filters, setFilters] = useState({
-    client: "",
-    employee: "",
-    from: "",
-    to: "",
-  });
+  const [filters, setFilters] = useState({ client: "", employee: "", from: "", to: "" });
 
   useEffect(() => {
     dispatch(fetchReports(filters));
@@ -67,19 +62,13 @@ export default function AdminReports() {
           label="Client"
           value={filters.client}
           onChange={(v) => setFilters((s) => ({ ...s, client: v }))}
-          options={[
-            { label: "All", value: "" },
-            ...clients.map((c) => ({ label: c.companyName, value: c._id })),
-          ]}
+          options={[{ label: "All", value: "" }, ...clients.map((c) => ({ label: c.companyName, value: c._id }))]}
         />
         <Select
           label="Employee"
           value={filters.employee}
           onChange={(v) => setFilters((s) => ({ ...s, employee: v }))}
-          options={[
-            { label: "All", value: "" },
-            ...employees.map((e) => ({ label: e.name, value: e._id })),
-          ]}
+          options={[{ label: "All", value: "" }, ...employees.map((e) => ({ label: e.name, value: e._id }))]}
         />
         <Text
           type="date"
@@ -196,7 +185,7 @@ export default function AdminReports() {
                     </span>
                   </td>
                   <td className="px-6 py-4 space-x-2">
-                    {report.status === "pending" ? (
+                    {report.status === 'pending' ? (
                       <>
                         <button
                           onClick={() => dispatch(approveReport(report._id))}
@@ -205,18 +194,14 @@ export default function AdminReports() {
                           Approve
                         </button>
                         <button
-                          onClick={() =>
-                            dispatch(rejectReport({ id: report._id }))
-                          }
+                          onClick={() => dispatch(rejectReport({ id: report._id }))}
                           className="text-red-600 hover:text-red-800"
                         >
                           Reject
                         </button>
                       </>
                     ) : (
-                      <span className="text-gray-500 text-sm">
-                        No actions available
-                      </span>
+                      <span className="text-gray-500 text-sm">No actions available</span>
                     )}
                   </td>
                 </tr>

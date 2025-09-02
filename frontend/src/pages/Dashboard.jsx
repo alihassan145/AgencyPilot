@@ -26,6 +26,7 @@ import AdminPayroll from "./admin/AdminPayroll";
 import AdminLeads from "./admin/AdminLeads";
 import AdminNotifications from "./admin/AdminNotifications";
 import Profile from "./Profile";
+import AccessControl from "./admin/AccessControl";
 
 export default function Dashboard({ userRole = "admin" }) {
   const [currentPage, setCurrentPage] = useState("dashboard");
@@ -59,6 +60,8 @@ export default function Dashboard({ userRole = "admin" }) {
           return <AdminReports />;
         case "notifications":
           return <AdminNotifications />;
+        case "access-control":
+          return <AccessControl />;
         case "profile":
           return <Profile />;
         default:
