@@ -2,6 +2,7 @@ require("dotenv").config();
 const http = require("http");
 const { createApp } = require("./app");
 const { connectToDatabase } = require("./config/db");
+const { ensureDefaultRolesSeeded } = require("./middleware/permissions");
 
 const PORT = process.env.PORT || 5001;
 
@@ -10,6 +11,8 @@ async function start() {
   try {
     await connectToDatabase();
     dbReady = true;
+    // Seed default roles when DB is connected
+    await ensureDefaultRolesSeeded();
   } catch (error) {
     // eslint-disable-next-line no-console
     console.warn(

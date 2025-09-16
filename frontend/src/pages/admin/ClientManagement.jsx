@@ -6,6 +6,7 @@ import {
   updateClient as updateClientThunk,
   deleteClient as deleteClientThunk,
 } from "../../store/clientsSlice";
+import { usePermissions } from "../../hooks/usePermissions";
 
 // CSV Export utility function
 const exportToCSV = (data, filename = "clients.csv") => {
@@ -84,9 +85,19 @@ export default function ClientManagement() {
     expiryDate: "",
   });
 
+  // Get permissions for client operations using generic hasPerm function
+  const { hasPerm } = usePermissions();
+  const canViewClients = hasPerm('clients-view');
+  const canAddClients = hasPerm('clients-add');
+  const canEditClients = hasPerm('clients-edit');
+  const canDeleteClients = hasPerm('clients-delete');
+  const canExportClients = hasPerm('clients-export');
+
   useEffect(() => {
-    dispatch(fetchClients());
-  }, [dispatch]);
+    if (canViewClients) {
+      dispatch(fetchClients());
+    }
+  }, [dispatch, canViewClients]);
 
   const clients = useMemo(() => {
     let filtered = items;
@@ -183,6 +194,19 @@ export default function ClientManagement() {
     setSelectedStatus("all");
   };
 
+  // Gate UI after all hooks are declared to keep Hooks order consistent
+  if (!canViewClients) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🔒</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
+          <p className="text-gray-600">You don't have permission to view client management.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-8 space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
@@ -193,18 +217,22 @@ export default function ClientManagement() {
           <p className="text-gray-600">Manage your client relationships</p>
         </div>
         <div className="space-x-2">
-          <button
-            onClick={handleExportCSV}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium transition-colors flex items-center gap-2"
-          >
-            📊 Export CSV
-          </button>
-          <button
-            onClick={openAdd}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md font-medium transition-colors"
-          >
-            + Add New Client
-          </button>
+          {canExportClients && (
+            <button
+              onClick={handleExportCSV}
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium transition-colors flex items-center gap-2"
+            >
+              📊 Export CSV
+            </button>
+          )}
+          {canAddClients && (
+            <button
+              onClick={openAdd}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md font-medium transition-colors"
+            >
+              + Add New Client
+            </button>
+          )}
         </div>
       </div>
 
@@ -339,18 +367,25 @@ export default function ClientManagement() {
                     </span>
                   </td>
                   <td className="py-3 space-x-2">
-                    <button
-                      onClick={() => openEdit(client)}
-                      className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded text-sm font-medium transition-colors"
-                    >
-                      ✏️ Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(client._id)}
-                      className="text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded text-sm font-medium transition-colors"
-                    >
-                      🗑️ Delete
-                    </button>
+                    {canEditClients && (
+                      <button
+                        onClick={() => openEdit(client)}
+                        className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded text-sm font-medium transition-colors"
+                      >
+                        ✏️ Edit
+                      </button>
+                    )}
+                    {canDeleteClients && (
+                      <button
+                        onClick={() => handleDelete(client._id)}
+                        className="text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded text-sm font-medium transition-colors"
+                      >
+                        🗑️ Delete
+                      </button>
+                    )}
+                    {!canEditClients && !canDeleteClients && (
+                      <span className="text-gray-400 text-sm">View Only</span>
+                    )}
                   </td>
                 </tr>
               ))}

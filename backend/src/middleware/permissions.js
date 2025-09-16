@@ -1,4 +1,5 @@
 const { User } = require("../models/User");
+const { Role } = require("../models/Role");
 
 // Role-based permissions matrix based on rolemanagement.txt
 const PERMISSIONS = {
@@ -45,7 +46,7 @@ const PERMISSIONS = {
     'calendar-delete': true,
     'calendar-export': true,
     
-    // Team permissions
+    // Team/Employee permissions
     'team-view-all': true,
     'team-view-team': true,
     'team-view-self': true,
@@ -53,6 +54,12 @@ const PERMISSIONS = {
     'team-edit': true,
     'team-delete': true,
     'team-export': true,
+    // Simplified frontend keys
+    'employees-view': true,
+    'employees-add': true,
+    'employees-edit': true,
+    'employees-delete': true,
+    'team-view': true,
     
     // Attendance permissions
     'attendance-view-all': true,
@@ -62,6 +69,8 @@ const PERMISSIONS = {
     'attendance-edit': true,
     'attendance-delete': true,
     'attendance-export': true,
+    // Simplified frontend keys
+    'attendance-view': true,
     
     // Leaves permissions
     'leaves-view-all': true,
@@ -72,6 +81,8 @@ const PERMISSIONS = {
     'leaves-delete': true,
     'leaves-approve': true,
     'leaves-export': true,
+    // Simplified frontend keys
+    'leaves-view': true,
     
     // Payroll permissions
     'payroll-view-all': true,
@@ -81,6 +92,9 @@ const PERMISSIONS = {
     'payroll-edit': true,
     'payroll-delete': true,
     'payroll-export': true,
+    'payroll-download': true,
+    // Simplified frontend keys
+    'payroll-view': true,
     
     // Reports permissions
     'reports-view-all': true,
@@ -89,7 +103,16 @@ const PERMISSIONS = {
     'reports-add': true,
     'reports-edit': true,
     'reports-delete': true,
+    'reports-approve': true,
     'reports-export': true,
+    // Simplified frontend keys
+    'reports-view': true,
+    
+    // Settings permissions
+    'settings-view': true,
+    'settings-edit': true,
+    'settings-manage-roles': true,
+    'settings-manage-permissions': true,
     
     // Notifications permissions
     'notifications-view-all': true,
@@ -102,102 +125,124 @@ const PERMISSIONS = {
   },
   
   manager: {
-    // Dashboard permissions - self only
+    // Dashboard permissions
     'dashboard-view-all': false,
-    'dashboard-view-team': false,
+    'dashboard-view-team': true,
     'dashboard-view-self': true,
     
-    // Clients permissions - self only
+    // Clients permissions
     'clients-view-all': false,
-    'clients-view-team': false,
+    'clients-view-team': true,
     'clients-view-self': true,
-    'clients-add': false,
-    'clients-edit': false,
+    'clients-add': true,
+    'clients-edit': true,
     'clients-delete': false,
-    'clients-export': false,
+    'clients-export': true,
     
-    // Leads permissions - self with some actions
+    // Leads permissions
     'leads-view-all': false,
-    'leads-view-team': false,
+    'leads-view-team': true,
     'leads-view-self': true,
     'leads-add': true,
     'leads-edit': true,
     'leads-delete': false,
     'leads-followup': true,
-    'leads-export': false,
+    'leads-export': true,
     
-    // Tasks permissions - self with some actions
+    // Tasks permissions
     'tasks-view-all': false,
-    'tasks-view-team': false,
+    'tasks-view-team': true,
     'tasks-view-self': true,
     'tasks-add': true,
     'tasks-edit': true,
     'tasks-delete': false,
-    'tasks-export': false,
+    'tasks-export': true,
     
-    // Calendar permissions - self with some actions
+    // Calendar permissions
     'calendar-view-all': false,
-    'calendar-view-team': false,
+    'calendar-view-team': true,
     'calendar-view-self': true,
     'calendar-add': true,
     'calendar-edit': true,
     'calendar-delete': false,
-    'calendar-export': false,
+    'calendar-export': true,
     
-    // Team permissions - self only
+    // Team/Employee permissions
     'team-view-all': false,
-    'team-view-team': false,
+    'team-view-team': true,
     'team-view-self': true,
-    'team-add': false,
-    'team-edit': false,
+    'team-add': true,
+    'team-edit': true,
     'team-delete': false,
-    'team-export': false,
+    'team-export': true,
+    // Simplified frontend keys
+    'employees-view': true,
+    'employees-add': true,
+    'employees-edit': true,
+    'employees-delete': false,
+    'team-view': true,
     
-    // Attendance permissions - self with some actions
+    // Attendance permissions
     'attendance-view-all': false,
-    'attendance-view-team': false,
+    'attendance-view-team': true,
     'attendance-view-self': true,
     'attendance-add': true,
     'attendance-edit': true,
     'attendance-delete': false,
-    'attendance-export': false,
+    'attendance-export': true,
+    // Simplified frontend keys
+    'attendance-view': true,
     
-    // Leaves permissions - self with some actions
+    // Leaves permissions
     'leaves-view-all': false,
-    'leaves-view-team': false,
+    'leaves-view-team': true,
     'leaves-view-self': true,
     'leaves-add': true,
     'leaves-edit': true,
     'leaves-delete': false,
-    'leaves-approve': false,
-    'leaves-export': false,
+    'leaves-approve': true,
+    'leaves-export': true,
+    // Simplified frontend keys
+    'leaves-view': true,
     
-    // Payroll permissions - self only view
+    // Payroll permissions
     'payroll-view-all': false,
-    'payroll-view-team': false,
+    'payroll-view-team': true,
     'payroll-view-self': true,
-    'payroll-add': false,
-    'payroll-edit': false,
+    'payroll-add': true,
+    'payroll-edit': true,
     'payroll-delete': false,
-    'payroll-export': false,
+    'payroll-export': true,
+    'payroll-download': true,
+    // Simplified frontend keys
+    'payroll-view': true,
     
-    // Reports permissions - self only
+    // Reports permissions
     'reports-view-all': false,
-    'reports-view-team': false,
+    'reports-view-team': true,
     'reports-view-self': true,
-    'reports-add': false,
-    'reports-edit': false,
+    'reports-add': true,
+    'reports-edit': true,
     'reports-delete': false,
-    'reports-export': false,
+    'reports-approve': true,
+    'reports-export': true,
+    // Simplified frontend keys
+    'reports-view': true,
     
-    // Notifications permissions - team and self with limited actions
+    // Settings permissions (limited for managers)
+    'settings-view': true,
+    'settings-edit': false,
+    'settings-manage-roles': false,
+    'settings-manage-permissions': false,
+    
+    // Notifications permissions
     'notifications-view-all': false,
     'notifications-view-team': true,
     'notifications-view-self': true,
     'notifications-add': true,
     'notifications-edit': true,
     'notifications-delete': false,
-    'notifications-export': false,
+    'notifications-export': true,
   },
   
   employee: {
@@ -243,7 +288,7 @@ const PERMISSIONS = {
     'calendar-delete': false,
     'calendar-export': false,
     
-    // Team permissions - self only
+    // Team/Employee permissions - self only
     'team-view-all': false,
     'team-view-team': false,
     'team-view-self': true,
@@ -251,6 +296,12 @@ const PERMISSIONS = {
     'team-edit': false,
     'team-delete': false,
     'team-export': false,
+    // Simplified frontend keys (limited for employees)
+    'employees-view': false,
+    'employees-add': false,
+    'employees-edit': false,
+    'employees-delete': false,
+    'team-view': false,
     
     // Attendance permissions - self with actions
     'attendance-view-all': false,
@@ -260,6 +311,8 @@ const PERMISSIONS = {
     'attendance-edit': true,
     'attendance-delete': false,
     'attendance-export': false,
+    // Simplified frontend keys
+    'attendance-view': true,
     
     // Leaves permissions - self with actions
     'leaves-view-all': false,
@@ -270,6 +323,8 @@ const PERMISSIONS = {
     'leaves-delete': false,
     'leaves-approve': false,
     'leaves-export': false,
+    // Simplified frontend keys
+    'leaves-view': true,
     
     // Payroll permissions - self view only
     'payroll-view-all': false,
@@ -279,6 +334,9 @@ const PERMISSIONS = {
     'payroll-edit': false,
     'payroll-delete': false,
     'payroll-export': false,
+    'payroll-download': false,
+    // Simplified frontend keys
+    'payroll-view': true,
     
     // Reports permissions - self only
     'reports-view-all': false,
@@ -287,7 +345,16 @@ const PERMISSIONS = {
     'reports-add': false,
     'reports-edit': false,
     'reports-delete': false,
+    'reports-approve': false,
     'reports-export': false,
+    // Simplified frontend keys
+    'reports-view': true,
+    
+    // Settings permissions (no access for employees)
+    'settings-view': false,
+    'settings-edit': false,
+    'settings-manage-roles': false,
+    'settings-manage-permissions': false,
     
     // Notifications permissions - self only
     'notifications-view-all': false,
@@ -399,58 +466,73 @@ const PERMISSIONS = {
   }
 };
 
+function mapToObject(maybeMap) {
+  if (!maybeMap) return {};
+  if (typeof maybeMap.toObject === 'function') return maybeMap.toObject();
+  if (maybeMap instanceof Map) return Object.fromEntries(maybeMap);
+  return { ...maybeMap };
+}
+
 /**
  * Middleware to check if user has specific permission
  * @param {string} permission - Permission to check (e.g., 'notifications-view-self')
  * @returns {Function} Express middleware
  */
 const requirePermission = (permission) => {
-  return (req, res, next) => {
-    const userRole = req.user.role;
-    
-    if (!PERMISSIONS[userRole] || !PERMISSIONS[userRole][permission]) {
-      return res.status(403).json({
-        error: "Access denied",
-        message: `Insufficient permissions for ${permission}`,
-      });
+  return async (req, res, next) => {
+    try {
+      const userRole = req.user.role;
+      const perms = await getUserPermissions(userRole);
+      if (!perms || perms[permission] !== true) {
+        return res.status(403).json({
+          error: "Access denied",
+          message: `Insufficient permissions for ${permission}`,
+        });
+      }
+      next();
+    } catch (err) {
+      next(err);
     }
-    
-    next();
   };
 };
 
 /**
- * Get all permissions for a role
+ * Get all permissions for a role (DB first, fallback to in-memory)
  * @param {string} role - User role
  * @returns {Object} Permissions object
  */
-const getUserPermissions = (role) => {
-  return PERMISSIONS[role] || {};
+const getUserPermissions = async (role) => {
+  const base = PERMISSIONS[role] || {};
+  const roleDoc = await Role.findOne({ name: role }).select('permissions');
+  if (roleDoc) {
+    const fromDb = mapToObject(roleDoc.permissions);
+    return { ...base, ...fromDb };
+  }
+  return base;
 };
 
 /**
  * Check if user has specific permission
  * @param {string} role - User role
  * @param {string} permission - Permission to check
- * @returns {boolean} Has permission
+ * @returns {Promise<boolean>} Has permission
  */
-const hasPermission = (role, permission) => {
-  return PERMISSIONS[role] && PERMISSIONS[role][permission] === true;
+const hasPermission = async (role, permission) => {
+  const perms = await getUserPermissions(role);
+  return perms && perms[permission] === true;
 };
 
 /**
  * Get scoping level for a resource based on user role
  * @param {string} role - User role
  * @param {string} resource - Resource name (e.g., 'notifications')
- * @returns {string} Scope level ('all', 'team', 'self', 'none')
+ * @returns {Promise<'all'|'team'|'self'|'none'>}
  */
-const getScopeLevel = (role, resource) => {
-  const permissions = PERMISSIONS[role] || {};
-  
+const getScopeLevel = async (role, resource) => {
+  const permissions = await getUserPermissions(role);
   if (permissions[`${resource}-view-all`]) return 'all';
   if (permissions[`${resource}-view-team`]) return 'team';
   if (permissions[`${resource}-view-self`]) return 'self';
-  
   return 'none';
 };
 
@@ -462,7 +544,7 @@ const getScopeLevel = (role, resource) => {
  * @returns {Object} MongoDB query object
  */
 const buildScopeQuery = async (user, resource, baseQuery = {}) => {
-  const scope = getScopeLevel(user.role, resource);
+  const scope = await getScopeLevel(user.role, resource);
   
   switch (scope) {
     case 'all':
@@ -471,25 +553,21 @@ const buildScopeQuery = async (user, resource, baseQuery = {}) => {
     case 'team':
       // For managers, show their team members' data (users who have this manager in reportingManagers)
       if (user.role === 'manager') {
-        const teamMembers = await User.find({ 
-          reportingManagers: { $in: [user.id] } 
-        }).select('_id');
-        const teamIds = teamMembers.map(member => member._id);
-        teamIds.push(user.id); // Include manager's own data
-        
+        const teamMembers = await User.find({ reportingManagers: { $in: [user.id] } }).select('_id');
+        const teamIds = teamMembers.map((m) => m._id);
+        teamIds.push(user.id);
         return {
           ...baseQuery,
           $or: [
             { user: { $in: teamIds } },
             { assignedTo: { $in: teamIds } },
             { createdBy: { $in: teamIds } },
-          ]
+          ],
         };
       }
       return { ...baseQuery, user: user.id };
       
     case 'self':
-      // For clients, filter by client field if available
       if (user.role === 'client' && user.clientId) {
         return {
           ...baseQuery,
@@ -497,17 +575,26 @@ const buildScopeQuery = async (user, resource, baseQuery = {}) => {
             { user: user.id },
             { client: user.clientId },
             { assignedTo: user.id },
-          ]
+          ],
         };
       }
       return { ...baseQuery, user: user.id };
       
     case 'none':
     default:
-      // Return query that matches nothing
       return { ...baseQuery, _id: null };
   }
 };
+
+async function ensureDefaultRolesSeeded() {
+  const names = Object.keys(PERMISSIONS);
+  for (const name of names) {
+    const exists = await Role.findOne({ name }).select('_id');
+    if (!exists) {
+      await Role.create({ name, permissions: PERMISSIONS[name] });
+    }
+  }
+}
 
 module.exports = {
   requirePermission,
@@ -515,5 +602,6 @@ module.exports = {
   hasPermission,
   getScopeLevel,
   buildScopeQuery,
-  PERMISSIONS
+  PERMISSIONS,
+  ensureDefaultRolesSeeded,
 };

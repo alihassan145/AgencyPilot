@@ -16,7 +16,7 @@ import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchNotifications } from "../store/notificationsSlice";
 import { useAuth } from "../context/AuthContext";
-import api from "../api/client";
+import { usePermissions } from "../hooks/usePermissions";
 
 // Centralized navigation config: define tabs once and assign per role
 const TABS = {
@@ -42,7 +42,7 @@ const TABS = {
   },
 };
 
-// Fallback role-based nav (used until permissions are fetched)
+// Fallback role-based nav (aligned with backend PERMISSIONS matrix)
 const ROLE_NAV_ITEMS = {
   admin: [
     "dashboard",
@@ -55,26 +55,40 @@ const ROLE_NAV_ITEMS = {
     "leaves",
     "payroll",
     "reports",
+    "notifications",
     "access-control",
   ],
   manager: [
     "dashboard",
-    "leads",
-    "tasks",
-    "calendar",
-    "reports",
-    "attendance",
-    "leaves",
+    "clients", // manager has clients-view-self
+    "leads", // manager has leads-view-self
+    "tasks", // manager has tasks-view-self
+    "calendar", // manager has calendar-view-self
+    "reports", // manager has reports-view-self
+    "attendance", // manager has attendance-view-self
+    "leaves", // manager has leaves-view-self
+    "payroll", // manager has payroll-view-self
+    "notifications", // manager has notifications-view-team/self
   ],
   employee: [
-    "dashboard",
-    "tasks",
-    "calendar",
-    "reports",
-    "attendance",
-    "leaves",
+    "dashboard", // employee has dashboard-view-self
+    "clients", // employee has clients-view-self
+    "leads", // employee has leads-view-self
+    "tasks", // employee has tasks-view-self
+    "calendar", // employee has calendar-view-self
+    "reports", // employee has reports-view-self
+    "attendance", // employee has attendance-view-self
+    "leaves", // employee has leaves-view-self
+    "payroll", // employee has payroll-view-self
+    "notifications", // employee has notifications-view-self
   ],
-  client: ["dashboard", "calendar", "reports"],
+  client: [
+    "dashboard", // client has dashboard-view-self
+    "tasks", // client has tasks-view-self
+    "calendar", // client has calendar-view-self
+    "reports", // client has reports-view-self
+    "notifications", // client has notifications-view-self
+  ],
 };
 
 // Map each tab to the minimum permission keys that grant visibility
@@ -93,10 +107,14 @@ const TAB_PERMISSIONS = {
   // access-control handled explicitly below
 };
 
-function canSeeTab(perms, role, tabKey) {
+function canSeeTab(permsOrPredicate, role, tabKey) {
   if (tabKey === "access-control") return role === "admin";
+  // Support either a predicate (hasPerm) or a permissions map
+  if (typeof permsOrPredicate === "function") {
+    return permsOrPredicate(`${tabKey}-view`);
+  }
   const required = TAB_PERMISSIONS[tabKey] || [];
-  return required.some((key) => perms && perms[key] === true);
+  return required.some((key) => permsOrPredicate && permsOrPredicate[key] === true);
 }
 
 export default function TopNavbar({ onTabChange }) {
@@ -151,31 +169,17 @@ export default function TopNavbar({ onTabChange }) {
   const displayName = rawName.replace(/^System\s+/i, "").trim();
   const avatarLetter = (displayName || "U").slice(0, 1).toUpperCase();
 
-  // Build visible tabs by permission
-  const [myPerms, setMyPerms] = useState(null);
+  // Build visible tabs by permission via centralized hook
   const userRole = user?.role || "client";
-  useEffect(() => {
-    let mounted = true;
-    api
-      .get("/permissions/my")
-      .then(({ data }) => {
-        if (mounted) setMyPerms(data || {});
-      })
-      .catch(() => {
-        if (mounted) setMyPerms(null);
-      });
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const { hasPerm, loading: permsLoading } = usePermissions();
 
-  const visibleTabKeys = myPerms
-    ? Object.keys(TABS).filter((k) => canSeeTab(myPerms, userRole, k))
-    : (ROLE_NAV_ITEMS[userRole] || ROLE_NAV_ITEMS.admin);
+  const visibleTabKeys = permsLoading
+    ? (ROLE_NAV_ITEMS[userRole] || ROLE_NAV_ITEMS.admin)
+    : Object.keys(TABS).filter((k) => canSeeTab(hasPerm, userRole, k));
 
-  const canSeeNotifications = myPerms
-    ? canSeeTab(myPerms, userRole, 'notifications')
-    : ((ROLE_NAV_ITEMS[userRole] || []).includes('notifications'));
+  const canSeeNotifications = permsLoading
+    ? ((ROLE_NAV_ITEMS[userRole] || []).includes("notifications"))
+    : canSeeTab(hasPerm, userRole, "notifications");
 
   // Change password is on the Profile page
   return (

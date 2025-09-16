@@ -6,10 +6,21 @@ import {
   updateLead,
   deleteLead,
 } from "../../store/leadsSlice";
+import { usePermissions } from "../../hooks/usePermissions";
 
 export default function AdminLeads() {
   const dispatch = useDispatch();
   const { items: leads, loading } = useSelector((s) => s.leads);
+  
+  // Get permissions for leads operations using generic hasPerm function
+  const { hasPerm } = usePermissions();
+  const canViewLeads = hasPerm('leads-view');
+  const canAddLeads = hasPerm('leads-add');
+  const canEditLeads = hasPerm('leads-edit');
+  const canDeleteLeads = hasPerm('leads-delete');
+  const canExportLeads = hasPerm('leads-export');
+
+  // States must be declared before any conditional return to keep Hooks order stable
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({
@@ -23,8 +34,9 @@ export default function AdminLeads() {
   });
 
   useEffect(() => {
+    if (!canViewLeads) return;
     dispatch(fetchLeads());
-  }, [dispatch]);
+  }, [dispatch, canViewLeads]);
 
   const resetForm = () => {
     setForm({
@@ -76,16 +88,31 @@ export default function AdminLeads() {
     </div>
   );
 
+  // Conditional rendering AFTER all hooks are declared to comply with Rules of Hooks
+  if (!canViewLeads) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🔒</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
+          <p className="text-gray-600">You don't have permission to view leads management.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Leads</h2>
-        <button
-          onClick={openCreate}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
-        >
-          + New Lead
-        </button>
+        {canAddLeads && (
+          <button
+            onClick={openCreate}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+          >
+            + New Lead
+          </button>
+        )}
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-auto">
@@ -126,18 +153,25 @@ export default function AdminLeads() {
                   <td className="py-3">{l.company}</td>
                   <td className="py-3 capitalize">{l.status}</td>
                   <td className="py-3 space-x-2">
-                    <button
-                      onClick={() => openEdit(l)}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      onClick={() => handleDelete(l._id)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      🗑️
-                    </button>
+                    {canEditLeads && (
+                      <button
+                        onClick={() => openEdit(l)}
+                        className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded text-sm font-medium transition-colors"
+                      >
+                        ✏️ Edit
+                      </button>
+                    )}
+                    {canDeleteLeads && (
+                      <button
+                        onClick={() => handleDelete(l._id)}
+                        className="text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded text-sm font-medium transition-colors"
+                      >
+                        🗑️ Delete
+                      </button>
+                    )}
+                    {!canEditLeads && !canDeleteLeads && (
+                      <span className="text-gray-400 text-sm">View Only</span>
+                    )}
                   </td>
                 </tr>
               ))}

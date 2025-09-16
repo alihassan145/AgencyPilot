@@ -16,21 +16,29 @@ import {
 } from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
 import { useAuth } from "../../context/AuthContext";
+import { usePermissions } from "../../hooks/usePermissions";
 
 // Admin Access Control page redesigned to match the provided UI
 export default function AccessControl() {
   const { user } = useAuth();
+  const { hasPerm } = usePermissions();
   const isAdmin = (user?.role || "").toLowerCase() === "admin";
+  
+  // Permission checks for settings operations
+  const canViewSettings = hasPerm('settings-view') || isAdmin;
+  const canEditSettings = hasPerm('settings-edit') || isAdmin;
+  const canManageRoles = hasPerm('settings-manage-roles') || isAdmin;
+  const canManagePermissions = hasPerm('settings-manage-permissions') || isAdmin;
 
-  // Guard: Only admins can view/access this page
-  if (!isAdmin) {
+  // Enhanced access control check
+  if (!canViewSettings) {
     return (
       <div className="max-w-3xl mx-auto p-6">
         <div className="bg-white border border-gray-200 rounded-xl shadow p-8 text-center">
           <div className="text-5xl mb-4">🔒</div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
           <p className="text-gray-600">
-            You do not have permission to view Access Control. Please contact your administrator.
+            You do not have permission to view Access Control settings. Please contact your administrator.
           </p>
         </div>
       </div>
@@ -116,13 +124,15 @@ export default function AccessControl() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">Select Role to View Permissions</h2>
-          <button
-            type="button"
-            className="inline-flex items-center px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white shadow"
-            onClick={() => setShowRolesModal(true)}
-          >
-            Manage Roles
-          </button>
+          {canManageRoles && (
+            <button
+              type="button"
+              className="inline-flex items-center px-4 py-2 rounded-md bg-purple-600 hover:bg-purple-700 text-white shadow"
+              onClick={() => setShowRolesModal(true)}
+            >
+              Manage Roles
+            </button>
+          )}
         </div>
 
         {loading ? (
@@ -187,21 +197,24 @@ export default function AccessControl() {
                 index={idx + 1}
                 group={group}
                 values={perms[currentRole] || {}}
-                onToggle={toggle}
+                onToggle={canManagePermissions ? toggle : null}
+                readOnly={!canManagePermissions}
               />
             ))}
           </div>
         </div>
 
-        <div className="flex items-center justify-end py-5">
-          <button
-            onClick={save}
-            disabled={saving}
-            className={`px-5 py-2 rounded-md text-white font-medium ${saving ? "bg-gray-400" : "bg-indigo-600 hover:bg-indigo-700"}`}
-          >
-            {saving ? "Saving..." : "Save Changes"}
-          </button>
-        </div>
+        {canEditSettings && (
+          <div className="flex items-center justify-end py-5">
+            <button
+              onClick={save}
+              disabled={saving}
+              className={`px-5 py-2 rounded-md text-white font-medium ${saving ? "bg-gray-400" : "bg-indigo-600 hover:bg-indigo-700"}`}
+            >
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        )}
 
         {message && (
           <div className={`mt-2 p-3 rounded ${message.type==='success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
@@ -290,7 +303,7 @@ function RoleCard({ role, selected, onClick }) {
   );
 }
 
-function GroupBlock({ index, group, values, onToggle }) {
+function GroupBlock({ index, group, values, onToggle, readOnly = false }) {
   const isFullAccess = group.items.every((it) => !!values[it.key]);
   const Icon = group.icon;
   return (
@@ -316,7 +329,13 @@ function GroupBlock({ index, group, values, onToggle }) {
       <div className="px-5 sm:px-6 pb-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {group.items.map((item) => (
-            <PermChip key={item.key} label={item.label} checked={!!values[item.key]} onClick={() => onToggle(item.key)} />
+            <PermChip
+              key={item.key}
+              label={item.label}
+              checked={!!values[item.key]}
+              onClick={readOnly ? null : () => onToggle?.(item.key)}
+              readOnly={readOnly}
+            />
           ))}
         </div>
       </div>
@@ -324,18 +343,29 @@ function GroupBlock({ index, group, values, onToggle }) {
   );
 }
 
-function PermChip({ label, checked, onClick }) {
+function PermChip({ label, checked, onClick, readOnly = false }) {
+  const baseClasses = "w-full text-left border rounded-lg px-4 py-3 flex items-center justify-between transition";
+  const checkedClasses = checked
+    ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+    : "bg-gray-50 border-gray-200 text-gray-800";
+  const interactiveClasses = readOnly
+    ? "cursor-not-allowed opacity-60"
+    : checked
+    ? ""
+    : "hover:bg-gray-100 cursor-pointer";
+
   return (
     <button
       type="button"
-      onClick={onClick}
-      className={`w-full text-left border rounded-lg px-4 py-3 flex items-center justify-between transition ${
-        checked
-          ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-          : "bg-gray-50 border-gray-200 text-gray-800 hover:bg-gray-100"
-      }`}
+      onClick={readOnly ? undefined : onClick}
+      disabled={readOnly}
+      className={`${baseClasses} ${checkedClasses} ${interactiveClasses}`}
+      title={readOnly ? "Permission management disabled" : undefined}
     >
-      <span className="text-sm font-medium">{label}</span>
+      <span className="text-sm font-medium">
+        {label}
+        {readOnly && <span className="text-xs opacity-75 ml-1">(Read Only)</span>}
+      </span>
       <span className={`inline-flex items-center gap-1 text-xs font-semibold ${checked ? "text-emerald-700" : "text-gray-500"}`}>
         {checked ? <FaCheck /> : null}
         {checked ? "ON" : "OFF"}

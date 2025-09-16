@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from "react";
 import api from "../../api/client";
+import { usePermissions } from "../../hooks/usePermissions";
 
 export default function AdminTeam() {
+  const { hasPerm } = usePermissions();
+  
+  // Permission checks for team operations
+  const canViewTeam = hasPerm('team-view');
+  const canAddTeam = hasPerm('team-add');
+  const canEditTeam = hasPerm('team-edit');
+  const canDeleteTeam = hasPerm('team-delete');
+  const canExportTeam = hasPerm('team-export');
+  
   const [teamMembers, setTeamMembers] = useState([]);
   const [managers, setManagers] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -10,6 +20,7 @@ export default function AdminTeam() {
   const [editingMember, setEditingMember] = useState(null);
   const [notification, setNotification] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState(null);
+  
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -21,10 +32,11 @@ export default function AdminTeam() {
 
   // Fetch team members and managers on component mount
   useEffect(() => {
+    if (!canViewTeam) return;
     fetchTeamMembers();
     fetchManagers();
     fetchDepartments();
-  }, []);
+  }, [canViewTeam]);
 
   const fetchTeamMembers = async () => {
     try {
@@ -225,24 +237,26 @@ export default function AdminTeam() {
             Manage your team members and hierarchy
           </p>
         </div>
-        <button
-          onClick={() => {
-            setEditingMember(null);
-            setForm({
-              name: "",
-              email: "",
-              department: "",
-              accessLevel: "Employee",
-              reportingTo: "",
-              status: "Active",
-            });
-            setShowModal(true);
-          }}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors flex items-center space-x-2"
-        >
-          <span>+</span>
-          <span>Add Team Member</span>
-        </button>
+        {canAddTeam && (
+          <button
+            onClick={() => {
+              setEditingMember(null);
+              setForm({
+                name: "",
+                email: "",
+                department: "",
+                accessLevel: "Employee",
+                reportingTo: "",
+                status: "Active",
+              });
+              setShowModal(true);
+            }}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors flex items-center space-x-2"
+          >
+            <span>+</span>
+            <span>Add Team Member</span>
+          </button>
+        )}
       </div>
 
       {/* Team Members Section */}
@@ -350,27 +364,36 @@ export default function AdminTeam() {
                     {/* Actions Column */}
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-3">
-                        <button
-                          onClick={() => handleEdit(member)}
-                          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded text-sm font-medium transition-colors flex items-center space-x-1"
-                        >
-                          <span>✏️</span>
-                          <span>Edit</span>
-                        </button>
-                        <button
-                          onClick={() => handleReset(member._id || member.id)}
-                          className="text-yellow-600 hover:text-yellow-800 hover:bg-yellow-50 px-2 py-1 rounded text-sm font-medium transition-colors flex items-center space-x-1"
-                        >
-                          <span>🔑</span>
-                          <span>Reset</span>
-                        </button>
-                        <button
-                          onClick={() => handleDelete(member._id || member.id)}
-                          className="text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded text-sm font-medium transition-colors flex items-center space-x-1"
-                        >
-                          <span>🗑️</span>
-                          <span>Delete</span>
-                        </button>
+                        {canEditTeam && (
+                          <button
+                            onClick={() => handleEdit(member)}
+                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded text-sm font-medium transition-colors flex items-center space-x-1"
+                          >
+                            <span>✏️</span>
+                            <span>Edit</span>
+                          </button>
+                        )}
+                        {canEditTeam && (
+                          <button
+                            onClick={() => handleReset(member._id || member.id)}
+                            className="text-yellow-600 hover:text-yellow-800 hover:bg-yellow-50 px-2 py-1 rounded text-sm font-medium transition-colors flex items-center space-x-1"
+                          >
+                            <span>🔑</span>
+                            <span>Reset</span>
+                          </button>
+                        )}
+                        {canDeleteTeam && (
+                          <button
+                            onClick={() => handleDelete(member._id || member.id)}
+                            className="text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1 rounded text-sm font-medium transition-colors flex items-center space-x-1"
+                          >
+                            <span>🗑️</span>
+                            <span>Delete</span>
+                          </button>
+                        )}
+                        {!canEditTeam && !canDeleteTeam && (
+                          <span className="text-gray-500 text-sm italic">View Only</span>
+                        )}
                       </div>
                     </td>
                   </tr>

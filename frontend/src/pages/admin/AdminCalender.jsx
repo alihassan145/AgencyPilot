@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchTasks } from "../../store/tasksSlice";
 import api from "../../api/client";
+import { usePermissions } from "../../hooks/usePermissions";
 
 const PRIORITY_COLOR = {
   high: "bg-red-500",
@@ -14,6 +15,15 @@ export default function AdminCalendar() {
   const { items, loading } = useSelector((s) => s.tasks);
   const [clients, setClients] = useState([]);
   const [users, setUsers] = useState([]);
+  
+  // Get permissions for calendar operations using generic hasPerm function
+  const { hasPerm } = usePermissions();
+  const canViewCalendar = hasPerm('calendar-view');
+  const canAddEvents = hasPerm('calendar-add');
+  const canEditEvents = hasPerm('calendar-edit');
+  const canDeleteEvents = hasPerm('calendar-delete');
+  const canExportCalendar = hasPerm('calendar-export');
+
 
   const today = new Date();
   const [currentDate, setCurrentDate] = useState(
@@ -36,6 +46,7 @@ export default function AdminCalendar() {
   const [showTaskPopup, setShowTaskPopup] = useState(false);
 
   useEffect(() => {
+    if (!canViewCalendar) return;
     (async () => {
       try {
         const [clientsRes, usersRes] = await Promise.all([
@@ -46,9 +57,10 @@ export default function AdminCalendar() {
         setUsers(usersRes.data || []);
       } catch {}
     })();
-  }, []);
+  }, [canViewCalendar]);
 
   useEffect(() => {
+    if (!canViewCalendar) return;
     const params = {
       from: fromDate,
       to: toDate,
@@ -56,7 +68,7 @@ export default function AdminCalendar() {
     if (selectedClient !== "all") params.client = selectedClient;
     if (selectedEmployee !== "all") params.employee = selectedEmployee;
     dispatch(fetchTasks(params));
-  }, [dispatch, fromDate, toDate, selectedClient, selectedEmployee]);
+  }, [dispatch, fromDate, toDate, selectedClient, selectedEmployee, canViewCalendar]);
 
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
@@ -127,6 +139,19 @@ export default function AdminCalendar() {
 
   const days = getDaysInMonth(currentDate);
 
+  // Gate UI after all hooks to keep Hooks order consistent
+  if (!canViewCalendar) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🔒</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
+          <p className="text-gray-600">You don't have permission to view the calendar.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-8 space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header Section */}
@@ -143,10 +168,12 @@ export default function AdminCalendar() {
             <span>📅</span>
             <span>Today</span>
           </button>
-          <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors flex items-center space-x-2">
-            <span>+</span>
-            <span>Add Task</span>
-          </button>
+          {canAddEvents && (
+            <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors flex items-center space-x-2">
+              <span>+</span>
+              <span>Add Task</span>
+            </button>
+          )}
         </div>
       </div>
 

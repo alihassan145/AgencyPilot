@@ -7,10 +7,21 @@ import {
   createTask,
 } from "../../store/tasksSlice";
 import api from "../../api/client";
+import { usePermissions } from "../../hooks/usePermissions";
 
 export default function AdminTasks() {
   const dispatch = useDispatch();
   const { items, loading } = useSelector((s) => s.tasks);
+  
+  // Get permissions for tasks operations using generic hasPerm function
+  const { hasPerm } = usePermissions();
+  const canViewTasks = hasPerm('tasks-view');
+  const canAddTasks = hasPerm('tasks-add');
+  const canEditTasks = hasPerm('tasks-edit');
+  const canDeleteTasks = hasPerm('tasks-delete');
+  const canExportTasks = hasPerm('tasks-export');
+
+  // State hooks moved above the conditional return to satisfy Rules of Hooks
   const [selectedAssignee, setSelectedAssignee] = useState("all");
   const [selectedClient, setSelectedClient] = useState("all");
   const [selectedPriority, setSelectedPriority] = useState("all");
@@ -30,10 +41,14 @@ export default function AdminTasks() {
   const [editingTask, setEditingTask] = useState(null);
   const [form, setForm] = useState(initialForm);
 
+  // Effects gated by permission so they do nothing when view access is denied
   useEffect(() => {
+    if (!canViewTasks) return;
     dispatch(fetchTasks());
-  }, [dispatch]);
+  }, [dispatch, canViewTasks]);
+
   useEffect(() => {
+    if (!canViewTasks) return;
     (async () => {
       try {
         const [usersRes, clientsRes] = await Promise.all([
@@ -46,7 +61,7 @@ export default function AdminTasks() {
         setClients(clientsRes.data || []);
       } catch {}
     })();
-  }, []);
+  }, [canViewTasks]);
 
   const tasks = useMemo(() => {
     // First apply filters to items
@@ -92,6 +107,19 @@ export default function AdminTasks() {
     });
     return byStatus;
   }, [items, searchTerm, selectedAssignee, selectedClient, selectedPriority, users, clients]);
+
+  // Gate UI after all hooks (including useMemo) to keep Hooks order consistent
+  if (!canViewTasks) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🔒</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
+          <p className="text-gray-600">You don't have permission to view task management.</p>
+        </div>
+      </div>
+    );
+  }
 
   const moveTask = (taskId, toStatus) => {
     dispatch(updateTask({ id: taskId, updates: { status: toStatus } }));
@@ -179,13 +207,12 @@ export default function AdminTasks() {
           task.priority || '',
           task.status || '',
           task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '',
-          task.createdAt ? new Date(task.createdAt).toLocaleDateString() : ''
+          task.createdAt ? new Date(task.createdAt).toLocaleString() : '',
         ];
       })
     ];
 
-    const timestamp = new Date().toISOString().split('T')[0];
-    exportToCSV(csvData, `tasks-export-${timestamp}.csv`);
+    exportToCSV(csvData, 'tasks_export.csv');
   };
 
   return (
@@ -197,20 +224,24 @@ export default function AdminTasks() {
           <p className="text-gray-600">Organize and track your projects.</p>
         </div>
         <div className="space-x-2">
-          <button 
-            onClick={handleExportCSV}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium transition-colors flex items-center space-x-2"
-          >
-            <span>⬇️</span>
-            <span>Export</span>
-          </button>
-          <button
-            onClick={() => setShowModal(true)}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md font-medium transition-colors flex items-center space-x-2"
-          >
-            <span>+</span>
-            <span>Create Task</span>
-          </button>
+          {canExportTasks && (
+            <button 
+              onClick={handleExportCSV}
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium transition-colors flex items-center space-x-2"
+            >
+              <span>⬇️</span>
+              <span>Export</span>
+            </button>
+          )}
+          {canAddTasks && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md font-medium transition-colors flex items-center space-x-2"
+            >
+              <span>+</span>
+              <span>Create Task</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -303,8 +334,8 @@ export default function AdminTasks() {
                 key={task._id}
                 task={task}
                 onMoveRight={() => moveTask(task._id, "in_progress")}
-                onDelete={() => handleDelete(task._id)}
-                onEdit={() => handleEdit(task)}
+                onDelete={canDeleteTasks ? () => handleDelete(task._id) : null}
+                onEdit={canEditTasks ? () => handleEdit(task) : null}
               />
             ))}
           </div>
@@ -329,8 +360,8 @@ export default function AdminTasks() {
                 key={task._id}
                 task={task}
                 onMoveRight={() => moveTask(task._id, "done")}
-                onDelete={() => handleDelete(task._id)}
-                onEdit={() => handleEdit(task)}
+                onDelete={canDeleteTasks ? () => handleDelete(task._id) : null}
+                onEdit={canEditTasks ? () => handleEdit(task) : null}
               />
             ))}
           </div>
@@ -352,8 +383,8 @@ export default function AdminTasks() {
               <TaskCard
                 key={task._id}
                 task={task}
-                onDelete={() => handleDelete(task._id)}
-                onEdit={() => handleEdit(task)}
+                onDelete={canDeleteTasks ? () => handleDelete(task._id) : null}
+                onEdit={canEditTasks ? () => handleEdit(task) : null}
                 isCompleted={true}
               />
             ))}
@@ -480,13 +511,15 @@ function TaskCard({ task, onMoveRight, onDelete, onEdit, isCompleted = false }) 
                 ✏️
               </button>
             )}
-            <button
-              onClick={onDelete}
-              className="text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded transition-colors"
-              title="Delete task"
-            >
-              🗑️
-            </button>
+            {onDelete && (
+              <button
+                onClick={onDelete}
+                className="text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded transition-colors"
+                title="Delete task"
+              >
+                🗑️
+              </button>
+            )}
           </div>
         </div>
       </div>

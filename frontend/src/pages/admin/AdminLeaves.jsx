@@ -139,7 +139,7 @@ export default function AdminLeaves() {
                     </span>
                   </td>
                   <td className="px-4 py-3 space-x-2">
-                    {l.status === 'pending' ? (
+                    {l.status === "pending" ? (
                       <>
                         <button
                           onClick={() => act(l._id, "approve")}
@@ -155,7 +155,9 @@ export default function AdminLeaves() {
                         </button>
                       </>
                     ) : (
-                      <span className="text-gray-500 text-sm">No actions available</span>
+                      <span className="text-gray-500 text-sm">
+                        No actions available
+                      </span>
                     )}
                   </td>
                 </tr>

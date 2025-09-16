@@ -17,7 +17,7 @@ const createNotification = asyncHandler(async (req, res) => {
   const { userId, type, title, message, priority } = req.body;
   
   // Check if user can create notifications
-  if (!hasPermission(req.user.role, 'notifications-add')) {
+  if (!await hasPermission(req.user.role, 'notifications-add')) {
     return res.status(403).json({ 
       error: "Access denied", 
       message: "Insufficient permissions to create notifications" 
@@ -46,7 +46,7 @@ const updateNotification = asyncHandler(async (req, res) => {
   const { type, title, message, read, priority } = req.body;
   
   // Check if user can edit notifications
-  if (!hasPermission(req.user.role, 'notifications-edit')) {
+  if (!await hasPermission(req.user.role, 'notifications-edit')) {
     return res.status(403).json({ 
       error: "Access denied", 
       message: "Insufficient permissions to edit notifications" 
@@ -81,7 +81,7 @@ const deleteNotification = asyncHandler(async (req, res) => {
   const { id } = req.params;
   
   // Check if user can delete notifications
-  if (!hasPermission(req.user.role, 'notifications-delete')) {
+  if (!await hasPermission(req.user.role, 'notifications-delete')) {
     return res.status(403).json({ 
       error: "Access denied", 
       message: "Insufficient permissions to delete notifications" 
@@ -133,7 +133,7 @@ const markSingleRead = asyncHandler(async (req, res) => {
 
 const exportNotifications = asyncHandler(async (req, res) => {
   // Check if user can export notifications
-  if (!hasPermission(req.user.role, 'notifications-export')) {
+  if (!await hasPermission(req.user.role, 'notifications-export')) {
     return res.status(403).json({ 
       error: "Access denied", 
       message: "Insufficient permissions to export notifications" 

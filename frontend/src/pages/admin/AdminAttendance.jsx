@@ -2,31 +2,55 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAttendance } from "../../store/attendanceSlice";
 import api from "../../api/client";
+import { usePermissions } from "../../hooks/usePermissions";
 
 export default function AdminAttendance() {
+  const { hasPerm } = usePermissions();
+  
+  // Permission checks for attendance operations
+  const canViewAttendance = hasPerm('attendance-view');
+  const canAddAttendance = hasPerm('attendance-add');
+  const canEditAttendance = hasPerm('attendance-edit');
+  const canDeleteAttendance = hasPerm('attendance-delete');
+  const canExportAttendance = hasPerm('attendance-export');
+  
   const dispatch = useDispatch();
   const { items, loading } = useSelector((s) => s.attendance);
   const [employees, setEmployees] = useState([]);
   const [employee, setEmployee] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-
+  
   useEffect(() => {
+    if (!canViewAttendance) return;
     (async () => {
       try {
         const { data } = await api.get("/users");
         setEmployees(data || []);
       } catch {}
     })();
-  }, []);
+  }, [canViewAttendance]);
 
   useEffect(() => {
+    if (!canViewAttendance) return;
     const params = {};
     if (employee) params.employee = employee;
     if (from) params.from = from;
     if (to) params.to = to;
     dispatch(fetchAttendance(params));
-  }, [dispatch, employee, from, to]);
+  }, [dispatch, employee, from, to, canViewAttendance]);
+
+  // Conditional rendering AFTER all hooks
+  if (!canViewAttendance) {
+    return (
+      <div className="p-8 space-y-6 mx-24">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <h2 className="text-xl font-semibold text-red-800 mb-2">Access Denied</h2>
+          <p className="text-red-600">You don't have permission to view attendance records.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 space-y-6 mx-24">
