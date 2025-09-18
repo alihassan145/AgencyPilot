@@ -468,9 +468,27 @@ const PERMISSIONS = {
 
 function mapToObject(maybeMap) {
   if (!maybeMap) return {};
+  // Detect Mongoose Map (has get/set) and convert reliably, preserving false values
+  if (typeof maybeMap.get === 'function' && typeof maybeMap.set === 'function') {
+    const obj = {};
+    if (typeof maybeMap.forEach === 'function') {
+      maybeMap.forEach((v, k) => {
+        obj[k] = v;
+      });
+      return obj;
+    }
+    if (typeof maybeMap.keys === 'function') {
+      for (const k of maybeMap.keys()) obj[k] = maybeMap.get(k);
+      return obj;
+    }
+  }
+  // Mongoose subdoc or other objects that expose toObject
   if (typeof maybeMap.toObject === 'function') return maybeMap.toObject();
+  // Native Map
   if (maybeMap instanceof Map) return Object.fromEntries(maybeMap);
-  return { ...maybeMap };
+  // Plain object
+  if (typeof maybeMap === 'object') return { ...maybeMap };
+  return {};
 }
 
 /**

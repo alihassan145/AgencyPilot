@@ -110,6 +110,9 @@ export default function AccessControl() {
       setSaving(true);
       const updates = perms[currentRole];
       await api.put(`/permissions/${currentRole}`, { updates });
+      // Refresh from server to ensure we reflect persisted/validated values
+      const { data: latest } = await api.get(`/permissions/${currentRole}`);
+      setPerms((prev) => ({ ...prev, [currentRole]: latest || {} }));
       setMessage({ type: "success", text: "Permissions saved" });
     } catch (e) {
       setMessage({ type: "error", text: e?.response?.data?.message || "Failed to save" });

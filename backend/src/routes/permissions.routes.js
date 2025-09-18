@@ -5,6 +5,34 @@ const { Role } = require("../models/Role");
 const { body, param } = require("express-validator");
 const { validate } = require("../middleware/validate");
 
+// Helper to normalize Mongoose Map/POJO to a plain object
+function mapToPlain(val) {
+  if (!val) return {};
+  // Prefer explicit Mongoose Map detection (has get/set)
+  if (typeof val.get === "function" && typeof val.set === "function") {
+    const obj = {};
+    // Mongoose Map supports forEach((v,k) => ...)
+    if (typeof val.forEach === "function") {
+      val.forEach((v, k) => {
+        obj[k] = v;
+      });
+      return obj;
+    }
+    // Fallback via keys/get
+    if (typeof val.keys === "function") {
+      for (const k of val.keys()) obj[k] = val.get(k);
+      return obj;
+    }
+  }
+  // Mongoose subdoc or other objects that expose toObject
+  if (typeof val.toObject === "function") return val.toObject();
+  // Native Map
+  if (val instanceof Map) return Object.fromEntries(val);
+  // Plain object
+  if (typeof val === "object") return { ...val };
+  return {};
+}
+
 // Public for any authenticated user: get my permissions
 router.get("/my", authenticate, async (req, res, next) => {
   try {
@@ -29,11 +57,7 @@ router.get("/", async (req, res, next) => {
     for (const name of roleNames) {
       const base = PERMISSIONS[name] || {};
       const found = rolesFromDb.find((r) => r.name === name);
-      const fromDb = found
-        ? (typeof found.permissions.toObject === "function"
-            ? found.permissions.toObject()
-            : found.permissions)
-        : {};
+      const fromDb = found ? mapToPlain(found.permissions) : {};
       // Merge base and DB (DB overrides base); ensures complete key coverage for UI
       matrix[name] = { ...base, ...fromDb };
     }
@@ -55,10 +79,7 @@ router.get(
       const base = PERMISSIONS[role] || {};
       const roleDoc = await Role.findOne({ name: role }).select("permissions");
       if (roleDoc) {
-        const fromDb =
-          typeof roleDoc.permissions.toObject === "function"
-            ? roleDoc.permissions.toObject()
-            : roleDoc.permissions;
+        const fromDb = mapToPlain(roleDoc.permissions);
         return res.json({ ...base, ...fromDb });
       }
       return res.json(base);
@@ -86,9 +107,7 @@ router.post(
       if (existing) return res.status(409).json({ message: "Role already exists" });
 
       const baseDoc = await Role.findOne({ name: base }).select("permissions");
-      const basePerms = baseDoc
-        ? (typeof baseDoc.permissions.toObject === 'function' ? baseDoc.permissions.toObject() : baseDoc.permissions)
-        : (PERMISSIONS[base] || {});
+      const basePerms = baseDoc ? mapToPlain(baseDoc.permissions) : (PERMISSIONS[base] || {});
 
       const created = await Role.create({ name: key, permissions: basePerms });
       return res.status(201).json({ role: created.name, permissions: basePerms });
@@ -119,27 +138,23 @@ router.put(
       let roleDoc = await Role.findOne({ name: role }).select("permissions name");
       // Initialize doc if not in DB
       if (!roleDoc) {
-        roleDoc = await Role.create({ name: role, permissions: base });
+        roleDoc = await Role.create({ name: role, permissions: {} });
       }
 
-      const existing =
-        typeof roleDoc.permissions.toObject === "function"
-          ? roleDoc.permissions.toObject()
-          : roleDoc.permissions || {};
-
-      // Start from merged state to ensure all base keys exist
-      const current = { ...base, ...existing };
-
+      // Apply updates directly to Mongoose Map to ensure persistence
       Object.keys(updates || {}).forEach((k) => {
         if (allowedKeys.has(k)) {
-          current[k] = Boolean(updates[k]);
+          roleDoc.permissions.set(k, Boolean(updates[k]));
         }
       });
 
-      roleDoc.permissions = current;
+      roleDoc.markModified("permissions");
       await roleDoc.save();
 
-      return res.json({ role: roleDoc.name, permissions: current });
+      // Build merged snapshot for response
+      const merged = { ...base, ...mapToPlain(roleDoc.permissions) };
+
+      return res.json({ role: roleDoc.name, permissions: merged });
     } catch (err) {
       next(err);
     }
